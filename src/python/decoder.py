@@ -1,7 +1,8 @@
 from pyriscv_definition import *
 from memory_slice import *
 
-class PyriscvDecodedInstruction():
+
+class PyriscvDecodedInstruction:
     raw_instruction: MemorySlice32
     codeclass: PyriscvCodeClass | None
     opcode: PyriscvOpCode | None
@@ -31,8 +32,18 @@ class PyriscvDecodedInstruction():
         self.rd = Operand(raw_instruction[11:7], 5)
         self.immi = Operand(raw_instruction[31:20], 12)
         self.imms = Operand(raw_instruction[31:25] << 5 | raw_instruction[11:7], 12)
-        self.immb = Operand(raw_instruction[31] << 12 | raw_instruction[7] << 11 | raw_instruction[30:25] << 5
-                            | raw_instruction[11:8] << 1, 13)
+        self.immb = Operand(
+            raw_instruction[31] << 12
+            | raw_instruction[7] << 11
+            | raw_instruction[30:25] << 5
+            | raw_instruction[11:8] << 1,
+            13,
+        )
         self.immu = Operand(raw_instruction[31:12] << 12, 32)
-        self.immj = Operand(raw_instruction[31] << 20 | raw_instruction[19:12] << 12
-                            | raw_instruction[20] << 11 | raw_instruction[30:21] << 1, 21)
+        self.immj = Operand(
+            raw_instruction[31] << 20
+            | raw_instruction[19:12] << 12
+            | raw_instruction[20] << 11
+            | raw_instruction[30:21] << 1,
+            21,
+        )

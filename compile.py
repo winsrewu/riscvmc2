@@ -4,6 +4,7 @@ from plugin.mcbuild import build_mcb
 from plugin.auto_dollor import auto_dollor
 from plugin.loader import load_memory_file
 
+
 def main(ctx: Context):
     build_mcb(ctx)
 

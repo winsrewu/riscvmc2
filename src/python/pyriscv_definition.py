@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class OptionalValueEnum(Enum):
     @classmethod
     def from_value(cls, value):
@@ -8,8 +9,10 @@ class OptionalValueEnum(Enum):
         except ValueError:
             return None
 
+
 class PyriscvCodeClass(OptionalValueEnum):
     BASE = 0b11
+
 
 class PyriscvOpCode(OptionalValueEnum):
     LUI = 0b01101
@@ -24,6 +27,7 @@ class PyriscvOpCode(OptionalValueEnum):
     FENCE = 0b00011
     ECALL = 0b11100
 
+
 class PyriscvFunct3Op(OptionalValueEnum):
     ADD_SUB = 0b000
     SLL = 0b001
@@ -34,6 +38,7 @@ class PyriscvFunct3Op(OptionalValueEnum):
     OR = 0b110
     AND = 0b111
 
+
 class PyriscvFunct3Branch(OptionalValueEnum):
     BEQ = 0b000
     BNE = 0b001
@@ -41,6 +46,7 @@ class PyriscvFunct3Branch(OptionalValueEnum):
     BGE = 0b101
     BLTU = 0b110
     BGEU = 0b111
+
 
 class PyriscvFunct3LoadStore(OptionalValueEnum):
     B = 0b000

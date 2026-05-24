@@ -2,6 +2,7 @@ from decoder import PyriscvDecodedInstruction
 from pyriscv_definition import *
 from memory_slice import *
 
+
 def encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, dict]:
     name, arg = _encode_to_function(decoded_inst)
 
@@ -13,16 +14,24 @@ def encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, di
 
     return name, arg
 
+
 def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, dict]:
     if decoded_inst.codeclass != PyriscvCodeClass.BASE:
         raise ValueError("Invalid code class")
-    
+
     if decoded_inst.opcode == PyriscvOpCode.JAL:
-        return "i_jal", {"rd": decoded_inst.rd.unsigned(), "imm": decoded_inst.immj.signed()}
-    
+        return "i_jal", {
+            "rd": decoded_inst.rd.unsigned(),
+            "imm": decoded_inst.immj.signed(),
+        }
+
     if decoded_inst.opcode == PyriscvOpCode.JALR:
-        return "i_jalr", {"rd": decoded_inst.rd.unsigned(), "rs1": decoded_inst.rs1.unsigned(), "imm": decoded_inst.immi.signed()}
-    
+        return "i_jalr", {
+            "rd": decoded_inst.rd.unsigned(),
+            "rs1": decoded_inst.rs1.unsigned(),
+            "imm": decoded_inst.immi.signed(),
+        }
+
     if decoded_inst.opcode == PyriscvOpCode.BRANCH:
         name = None
         if decoded_inst.funct3branch == PyriscvFunct3Branch.BEQ:
@@ -40,8 +49,12 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
         if name is None:
             raise ValueError("Invalid branch funct3")
 
-        return name, {"rs1": decoded_inst.rs1.unsigned(), "rs2": decoded_inst.rs2.unsigned(), "imm": decoded_inst.immb.signed()}
-    
+        return name, {
+            "rs1": decoded_inst.rs1.unsigned(),
+            "rs2": decoded_inst.rs2.unsigned(),
+            "imm": decoded_inst.immb.signed(),
+        }
+
     if decoded_inst.opcode == PyriscvOpCode.OP_IMM:
         name = None
         if decoded_inst.funct3op == PyriscvFunct3Op.ADD_SUB:
@@ -63,8 +76,12 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
         if name is None:
             raise ValueError("Invalid op_imm funct3")
 
-        return name, {"rd": decoded_inst.rd.unsigned(), "rs1": decoded_inst.rs1.unsigned(), "imm": decoded_inst.immi.signed()}
-    
+        return name, {
+            "rd": decoded_inst.rd.unsigned(),
+            "rs1": decoded_inst.rs1.unsigned(),
+            "imm": decoded_inst.immi.signed(),
+        }
+
     if decoded_inst.opcode == PyriscvOpCode.OP:
         name = None
         if decoded_inst.funct3op == PyriscvFunct3Op.ADD_SUB:
@@ -95,15 +112,25 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
             name = "i_sltu"
         if name is None:
             raise ValueError("Invalid op_imm funct3")
-        
-        return name, {"rd": decoded_inst.rd.unsigned(), "rs1": decoded_inst.rs1.unsigned(), "rs2": decoded_inst.rs2.unsigned()}
-    
+
+        return name, {
+            "rd": decoded_inst.rd.unsigned(),
+            "rs1": decoded_inst.rs1.unsigned(),
+            "rs2": decoded_inst.rs2.unsigned(),
+        }
+
     if decoded_inst.opcode == PyriscvOpCode.LUI:
-        return "i_lui", {"rd": decoded_inst.rd.unsigned(), "imm": decoded_inst.immu.unsigned()}
+        return "i_lui", {
+            "rd": decoded_inst.rd.unsigned(),
+            "imm": decoded_inst.immu.unsigned(),
+        }
 
     if decoded_inst.opcode == PyriscvOpCode.AUIPC:
-        return "i_auipc", {"rd": decoded_inst.rd.unsigned(), "imm": decoded_inst.immu.unsigned()}
-    
+        return "i_auipc", {
+            "rd": decoded_inst.rd.unsigned(),
+            "imm": decoded_inst.immu.unsigned(),
+        }
+
     if decoded_inst.opcode == PyriscvOpCode.LOAD:
         name = None
         if decoded_inst.funct3loadstore == PyriscvFunct3LoadStore.W:
@@ -119,8 +146,12 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
         if name is None:
             raise ValueError("Invalid load funct3")
 
-        return name, {"rd": decoded_inst.rd.unsigned(), "rs1": decoded_inst.rs1.unsigned(), "imm": decoded_inst.immi.signed()}
-    
+        return name, {
+            "rd": decoded_inst.rd.unsigned(),
+            "rs1": decoded_inst.rs1.unsigned(),
+            "imm": decoded_inst.immi.signed(),
+        }
+
     if decoded_inst.opcode == PyriscvOpCode.STORE:
         name = None
         if decoded_inst.funct3loadstore == PyriscvFunct3LoadStore.W:
@@ -132,17 +163,22 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
         if name is None:
             raise ValueError("Invalid store funct3")
 
-        return name, {"rs1": decoded_inst.rs1.unsigned(), "rs2": decoded_inst.rs2.unsigned(), "imm": decoded_inst.imms.signed()}
-    
+        return name, {
+            "rs1": decoded_inst.rs1.unsigned(),
+            "rs2": decoded_inst.rs2.unsigned(),
+            "imm": decoded_inst.imms.signed(),
+        }
+
     if Operand(decoded_inst.raw_instruction).unsigned() == 0x00000073:
         return "i_ecall", {}
-    
+
     # There's a hardcoded csr instruction in std c lib, for exception handling
     # But we doesn't support it.
-    if  Operand(decoded_inst.raw_instruction).unsigned() == 0xc2202573: #csrrs a0, zero
+    if Operand(decoded_inst.raw_instruction).unsigned() == 0xC2202573:  # csrrs a0, zero
         return "i_should_not_call", {}
 
     raise ValueError("Invalid instruction")
+
 
 def encode_to_scoreboard(data_dict: dict):
     for addr, data in sorted(data_dict.items(), key=lambda x: x[0]):

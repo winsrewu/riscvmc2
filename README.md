@@ -67,7 +67,7 @@ Check the comments in the files.
 
 ## TODO
 
-- [ ] ``Execute`` based fast interations
+- [ ] ``Execute`` based fast iterations
 - [ ] M extension
 - [ ] Linux in Minecraft
 - [ ] ``Execute`` magic based faster bitwise operations & module management

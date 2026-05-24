@@ -1,0 +1,396 @@
+import ./org_jawbts_riscvmc2_bitwise_ops_t.mcbt
+
+template _pc_add {
+    with num:int {
+        scoreboard players operation #pc org_jawbts_riscvmc2_register += #<% num %> org_jawbts_riscvmc2_bitwise_ops_consts
+    }
+}
+
+template i_add {
+    with rs1:word rs2:word rd:word {
+        scoreboard players operation #imm_rs1_add org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_add org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register = #imm_rs1_add org_jawbts_riscvmc2_register
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register += #imm_rs2_add org_jawbts_riscvmc2_register
+
+        template _pc_add 4
+    }
+}
+
+# Warning: imm should be sign extended
+template i_addi {
+    with rs1:word imm:word rd:word {
+        scoreboard players operation #imm_rs1_addi org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+
+        scoreboard players set #<% rd %> org_jawbts_riscvmc2_register <% imm %>
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register += #imm_rs1_addi org_jawbts_riscvmc2_register
+
+        template _pc_add 4
+    }
+}
+
+template i_sub {
+    with rs1:word rs2:word rd:word {
+        scoreboard players operation #imm_rs1_sub org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_sub org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register = #imm_rs1_sub org_jawbts_riscvmc2_register
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register -= #imm_rs2_sub org_jawbts_riscvmc2_register
+
+        template _pc_add 4
+    }
+}
+
+template i_and {
+    with rs1:word rs2:word rd:word {
+        scoreboard players operation #imm_rs1_and org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_and org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        template and #imm_rs1_and@org_jawbts_riscvmc2_register #imm_rs2_and@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+# Warning: imm should be sign extended
+template i_andi {
+    with rs1:word imm:word rd:word {
+        scoreboard players operation #imm_rs1_andi org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+
+        scoreboard players set #imm_andi org_jawbts_riscvmc2_register <% imm %>
+        template and #imm_rs1_andi@org_jawbts_riscvmc2_register #imm_andi@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+template i_or {
+    with rs1:word rs2:word rd:word {
+        scoreboard players operation #imm_rs1_or org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_or org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        template or #imm_rs1_or@org_jawbts_riscvmc2_register #imm_rs2_or@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+# Warning: imm should be sign extended
+template i_ori {
+    with rs1:word imm:word rd:word {
+        scoreboard players operation #imm_rs1_ori org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+
+        scoreboard players set #imm_ori org_jawbts_riscvmc2_register <% imm %>
+        template or #imm_rs1_ori@org_jawbts_riscvmc2_register #imm_ori@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+template i_xor {
+    with rs1:word rs2:word rd:word {
+        scoreboard players operation #imm_rs1_xor org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_xor org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        template xor #imm_rs1_xor@org_jawbts_riscvmc2_register #imm_rs2_xor@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+# Warning: imm should be sign extended
+template i_xori {
+    with rs1:word imm:word rd:word {
+        scoreboard players operation #imm_rs1_xori org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+
+        scoreboard players set #imm_xori org_jawbts_riscvmc2_register <% imm %>
+        template xor #imm_rs1_xori@org_jawbts_riscvmc2_register #imm_xori@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+template i_sll {
+    with rs1:word rs2:word rd:word {
+        scoreboard players operation #imm_rs1_sll org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_sll org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        template shift_left_logical #imm_rs1_sll@org_jawbts_riscvmc2_register #imm_rs2_sll@org_jawbts_riscvmc2_register
+
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register = #imm_rs1_sll org_jawbts_riscvmc2_register
+
+        template _pc_add 4
+    }
+}
+
+template i_slli {
+    with rs1:word imm:word rd:word {
+        scoreboard players operation #imm_rs1_slli org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+
+        scoreboard players set #imm_slli org_jawbts_riscvmc2_register <% imm %>
+        template shift_left_logical #imm_rs1_slli@org_jawbts_riscvmc2_register #imm_slli@org_jawbts_riscvmc2_register
+
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register = #imm_rs1_slli org_jawbts_riscvmc2_register
+
+        template _pc_add 4
+    }
+}
+
+template i_sra {
+    with rs1:word rs2:word rd:word {
+        scoreboard players operation #imm_rs1_sra org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_sra org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        template shift_right_arithmetic #imm_rs1_sra@org_jawbts_riscvmc2_register #imm_rs2_sra@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+template i_srai {
+    with rs1:word imm:word rd:word {
+        scoreboard players operation #imm_rs1_srai org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+
+        scoreboard players set #imm_srai org_jawbts_riscvmc2_register <% imm %>
+        template shift_right_arithmetic #imm_rs1_srai@org_jawbts_riscvmc2_register #imm_srai@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+template i_srl {
+    with rs1:word rs2:word rd:word {
+        scoreboard players operation #imm_rs1_srl org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_srl org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        template shift_right_logical #imm_rs1_srl@org_jawbts_riscvmc2_register #imm_rs2_srl@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+template i_srli {
+    with rs1:word imm:word rd:word {
+        scoreboard players operation #imm_rs1_srli org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+
+        scoreboard players set #imm_srli org_jawbts_riscvmc2_register <% imm %>
+        template shift_right_logical #imm_rs1_srli@org_jawbts_riscvmc2_register #imm_srli@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+# Warning: imm in this inst should be the one has been shifted, not the original imm
+template i_lui {
+    with imm:word rd:word {
+        scoreboard players set #<% rd %> org_jawbts_riscvmc2_register <% imm %>
+
+        template _pc_add 4
+    }
+}
+
+# Warning: imm in this inst should be the one has been shifted, not the original imm
+template i_auipc {
+    with imm:word rd:word {
+        scoreboard players set #<% rd %> org_jawbts_riscvmc2_register <% imm %>
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register += #pc org_jawbts_riscvmc2_register
+
+        template _pc_add 4
+    }
+}
+
+template i_slt {
+    with rs1:word rs2:word rd:word {
+        IF rd.startsWith("$(") {
+            data modify storage org_jawbts_riscvmc2_temp:main inst_marco_temp.rd set value <% rd %>
+        }
+
+        execute if score #<% rs1 %> org_jawbts_riscvmc2_register < #<% rs2 %> org_jawbts_riscvmc2_register run { with storage org_jawbts_riscvmc2_temp:main inst_marco_temp
+            scoreboard players set #<% rd %> org_jawbts_riscvmc2_register 1
+        } else run { with storage org_jawbts_riscvmc2_temp:main inst_marco_temp
+            scoreboard players set #<% rd %> org_jawbts_riscvmc2_register 0
+        }
+
+        template _pc_add 4
+    }
+}
+
+# Warning: imm should be sign extended
+template i_slti {
+    with rs1:word imm:word rd:word {
+        scoreboard players set #imm_slti org_jawbts_riscvmc2_register <% imm %>
+
+        IF rd.startsWith("$(") {
+            data modify storage org_jawbts_riscvmc2_temp:main inst_marco_temp.rd set value <% rd %>
+        }
+
+        execute if score #<% rs1 %> org_jawbts_riscvmc2_register < #imm_slti org_jawbts_riscvmc2_register run { with storage org_jawbts_riscvmc2_temp:main inst_marco_temp
+            scoreboard players set #<% rd %> org_jawbts_riscvmc2_register 1
+        } else run { with storage org_jawbts_riscvmc2_temp:main inst_marco_temp
+            scoreboard players set #<% rd %> org_jawbts_riscvmc2_register 0
+        }
+
+        template _pc_add 4
+    }
+}
+
+template i_sltu {
+    with rs1:word rs2:word rd:word {
+        scoreboard players operation #imm_rs1_sltu org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_sltu org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        template bigger_than_unsigned #imm_rs2_sltu@org_jawbts_riscvmc2_register #imm_rs1_sltu@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+# Warning: imm should be sign extended
+template i_sltiu {
+    with rs1:word imm:word rd:word {
+        scoreboard players operation #imm_rs1_sltiu org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+
+        scoreboard players set #imm_sltiu org_jawbts_riscvmc2_register <% imm %>
+        template bigger_than_unsigned #imm_sltiu@org_jawbts_riscvmc2_register #imm_rs1_sltiu@org_jawbts_riscvmc2_register <% "#" + rd + "@org_jawbts_riscvmc2_register" %>
+
+        template _pc_add 4
+    }
+}
+
+# Warning: imm should be sign extended
+template i_beq {
+    with rs1:word rs2:word imm:word {
+        IF imm.startsWith("$(") {
+            data modify storage org_jawbts_riscvmc2_temp:main inst_marco_temp.imm set value <% imm %>
+        }
+
+        execute if score #<% rs1 %> org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register run { with storage org_jawbts_riscvmc2_temp:main inst_marco_temp
+            scoreboard players set #imm_beq org_jawbts_riscvmc2_register <% imm %>
+            scoreboard players operation #pc org_jawbts_riscvmc2_register += #imm_beq org_jawbts_riscvmc2_register
+        } else run {
+            template _pc_add 4
+        }
+    }
+}
+
+# Warning: imm should be sign extended
+template i_bne {
+    with rs1:word rs2:word imm:word {
+        IF imm.startsWith("$(") {
+            data modify storage org_jawbts_riscvmc2_temp:main inst_marco_temp.imm set value <% imm %>
+        }
+
+        execute unless score #<% rs1 %> org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register run { with storage org_jawbts_riscvmc2_temp:main inst_marco_temp
+            scoreboard players set #imm_bne org_jawbts_riscvmc2_register <% imm %>
+            scoreboard players operation #pc org_jawbts_riscvmc2_register += #imm_bne org_jawbts_riscvmc2_register
+        } else run {
+            template _pc_add 4
+        }
+    }
+}
+
+# Warning: imm should be sign extended
+template i_bge {
+    with rs1:word rs2:word imm:word {
+        IF imm.startsWith("$(") {
+            data modify storage org_jawbts_riscvmc2_temp:main inst_marco_temp.imm set value <% imm %>
+        }
+
+        execute if score #<% rs1 %> org_jawbts_riscvmc2_register >= #<% rs2 %> org_jawbts_riscvmc2_register run { with storage org_jawbts_riscvmc2_temp:main inst_marco_temp
+            scoreboard players set #imm_bge org_jawbts_riscvmc2_register <% imm %>
+            scoreboard players operation #pc org_jawbts_riscvmc2_register += #imm_bge org_jawbts_riscvmc2_register
+        } else run {
+            template _pc_add 4
+        }
+    }
+}
+
+# Warning: imm should be sign extended
+template i_bgeu {
+    with rs1:word rs2:word imm:word {
+        scoreboard players operation #imm_rs1_bgeu org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_bgeu org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        template bigger_than_or_equal_unsigned #imm_rs1_bgeu@org_jawbts_riscvmc2_register #imm_rs2_bgeu@org_jawbts_riscvmc2_register #imm_rd_bgeu@org_jawbts_riscvmc2_register
+
+        IF imm.startsWith("$(") {
+            data modify storage org_jawbts_riscvmc2_temp:main inst_marco_temp.imm set value <% imm %>
+        }
+
+        execute if score #imm_rd_bgeu org_jawbts_riscvmc2_register matches 1 run { with storage org_jawbts_riscvmc2_temp:main inst_marco_temp
+            scoreboard players set #imm_bgeu org_jawbts_riscvmc2_register <% imm %>
+            scoreboard players operation #pc org_jawbts_riscvmc2_register += #imm_bgeu org_jawbts_riscvmc2_register
+        } else run {
+            template _pc_add 4
+        }
+    }
+}
+
+# Warning: imm should be sign extended
+template i_blt {
+    with rs1:word rs2:word imm:word {
+        IF imm.startsWith("$(") {
+            data modify storage org_jawbts_riscvmc2_temp:main inst_marco_temp.imm set value <% imm %>
+        }
+
+        execute if score #<% rs1 %> org_jawbts_riscvmc2_register < #<% rs2 %> org_jawbts_riscvmc2_register run { with storage org_jawbts_riscvmc2_temp:main inst_marco_temp
+            scoreboard players set #imm_blt org_jawbts_riscvmc2_register <% imm %>
+            scoreboard players operation #pc org_jawbts_riscvmc2_register += #imm_blt org_jawbts_riscvmc2_register
+        } else run {
+            template _pc_add 4
+        }
+    }
+}
+
+# Warning: imm should be sign extended
+template i_bltu {
+    with rs1:word rs2:word imm:word {
+        scoreboard players operation #imm_rs1_bltu org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_rs2_bltu org_jawbts_riscvmc2_register = #<% rs2 %> org_jawbts_riscvmc2_register
+
+        template bigger_than_unsigned #imm_rs2_bltu@org_jawbts_riscvmc2_register #imm_rs1_bltu@org_jawbts_riscvmc2_register #imm_rd_bltu@org_jawbts_riscvmc2_register
+
+        IF imm.startsWith("$(") {
+            data modify storage org_jawbts_riscvmc2_temp:main inst_marco_temp.imm set value <% imm %>
+        }
+
+        execute if score #imm_rd_bltu org_jawbts_riscvmc2_register matches 1 run { with storage org_jawbts_riscvmc2_temp:main inst_marco_temp
+            scoreboard players set #imm_bltu org_jawbts_riscvmc2_register <% imm %>
+            scoreboard players operation #pc org_jawbts_riscvmc2_register += #imm_bltu org_jawbts_riscvmc2_register
+        } else run {
+            template _pc_add 4
+        }
+    }
+}
+
+# Warning: imm should be sign extended
+template i_jal {
+    with imm:word rd:word {
+        scoreboard players set #imm_jal org_jawbts_riscvmc2_register <% imm %>
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register = #pc org_jawbts_riscvmc2_register
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register += #4 org_jawbts_riscvmc2_bitwise_ops_consts
+        scoreboard players operation #pc org_jawbts_riscvmc2_register += #imm_jal org_jawbts_riscvmc2_register
+    }
+}
+
+# Warning: imm should be sign extended
+template i_jalr {
+    with rs1:word imm:word rd:word {
+        scoreboard players operation #imm_pc_jalr org_jawbts_riscvmc2_register = #pc org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_pc_jalr org_jawbts_riscvmc2_register += #4 org_jawbts_riscvmc2_bitwise_ops_consts
+
+        scoreboard players set #imm_jalr org_jawbts_riscvmc2_register <% imm %>
+        scoreboard players operation #pc org_jawbts_riscvmc2_register = #<% rs1 %> org_jawbts_riscvmc2_register
+        scoreboard players operation #pc org_jawbts_riscvmc2_register += #imm_jalr org_jawbts_riscvmc2_register
+
+        scoreboard players operation #imm_pc_r_jalr org_jawbts_riscvmc2_register = #pc org_jawbts_riscvmc2_register
+        scoreboard players operation #imm_pc_r_jalr org_jawbts_riscvmc2_register %= #2 org_jawbts_riscvmc2_bitwise_ops_consts
+
+        execute if score #imm_pc_r_jalr org_jawbts_riscvmc2_register matches 1 run {
+            scoreboard players remove #pc org_jawbts_riscvmc2_register 1
+        }
+
+        scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register = #imm_pc_jalr org_jawbts_riscvmc2_register
+    }
+}

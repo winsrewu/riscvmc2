@@ -1,0 +1,218 @@
+# Do 32-bit bitwise operations. Interface through scoreboard.
+
+# Every parameter in this namespace is in this format:
+# <player name>@<scoreboard name>
+
+# Some of the parameters may be marked as modified, which means they are modified in the function.
+# All parameters must not share the same scoreboard position. (e.g. no and a@c b@c a@c)
+
+template and {
+    # Modified: input_a, input_b, output
+    with input_a:word input_b:word output:word {
+        scoreboard players set <% output.replace("@", " ") %> 0
+
+        execute if score <% input_a.replace("@", " ") %> matches ..-1 if score <% input_b.replace("@", " ") %> matches ..-1 \
+            run scoreboard players set <% output.replace("@", " ") %> -2147483648
+
+        REPEAT (30, 0) as i {
+            scoreboard players operation <% input_a.replace("@", " ") %> += <% input_a.replace("@", " ") %>
+            scoreboard players operation <% input_b.replace("@", " ") %> += <% input_b.replace("@", " ") %>
+            execute if score <% input_a.replace("@", " ") %> matches ..-1 if score <% input_b.replace("@", " ") %> matches ..-1 \
+                run scoreboard players add <% output.replace("@", " ") %> <% 2 ** i %>
+        }
+    }
+}
+
+template or {
+    # Modified: input_a, input_b, output
+    with input_a:word input_b:word output:word {
+        scoreboard players set <% output.replace("@", " ") %> -1
+
+        execute if score <% input_a.replace("@", " ") %> matches 0.. if score <% input_b.replace("@", " ") %> matches 0.. \
+            run scoreboard players set <% output.replace("@", " ") %> 2147483647
+
+        REPEAT (30, 0) as i {
+            scoreboard players operation <% input_a.replace("@", " ") %> += <% input_a.replace("@", " ") %>
+            scoreboard players operation <% input_b.replace("@", " ") %> += <% input_b.replace("@", " ") %>
+            execute if score <% input_a.replace("@", " ") %> matches 0.. if score <% input_b.replace("@", " ") %> matches 0.. \
+                run scoreboard players remove <% output.replace("@", " ") %> <% 2 ** i %>
+        }
+    }
+}
+
+template xor {
+    # Modified: input_a, input_b, output
+    with input_a:word input_b:word output:word {
+        scoreboard players set <% output.replace("@", " ") %> 0
+
+        execute if score <% input_a.replace("@", " ") %> matches ..-1 if score <% input_b.replace("@", " ") %> matches 0.. \
+            run scoreboard players set <% output.replace("@", " ") %> -2147483648
+        execute if score <% input_a.replace("@", " ") %> matches 0.. if score <% input_b.replace("@", " ") %> matches ..-1 \
+            run scoreboard players set <% output.replace("@", " ") %> -2147483648
+
+        REPEAT (30, 0) as i {
+            scoreboard players operation <% input_a.replace("@", " ") %> += <% input_a.replace("@", " ") %>
+            scoreboard players operation <% input_b.replace("@", " ") %> += <% input_b.replace("@", " ") %>
+            execute if score <% input_a.replace("@", " ") %> matches ..-1 if score <% input_b.replace("@", " ") %> matches 0.. \
+                run scoreboard players add <% output.replace("@", " ") %> <% 2 ** i %>
+            execute if score <% input_a.replace("@", " ") %> matches 0.. if score <% input_b.replace("@", " ") %> matches ..-1 \
+                run scoreboard players add <% output.replace("@", " ") %> <% 2 ** i %>
+        }
+    }
+}
+
+template not {
+    # Modified: input
+    with input:word {
+        scoreboard players operation <% input.replace("@", " ") %> *= #-1 org_jawbts_riscvmc2_bitwise_ops_consts
+        scoreboard players remove <% input.replace("@", " ") %> 1
+    }
+}
+
+template bigger_than_unsigned {
+    # output = (input_a > input_b) ? 1 : 0
+    # Modified: input_a, input_b, output
+    with input_a:word input_b:word output:word {
+        scoreboard players set <% output.replace("@", " ") %> 0
+
+        execute if score <% input_a.replace("@", " ") %> matches ..-1 if score <% input_b.replace("@", " ") %> matches 0.. \
+            run scoreboard players set <% output.replace("@", " ") %> 1
+
+        execute if score <% input_a.replace("@", " ") %> matches 0.. if score <% input_b.replace("@", " ") %> matches 0.. \
+            if score <% input_a.replace("@", " ") %> > <% input_b.replace("@", " ") %> \
+            run scoreboard players set <% output.replace("@", " ") %> 1
+
+        execute if score <% input_a.replace("@", " ") %> matches ..-1 if score <% input_b.replace("@", " ") %> matches ..-1 \
+            if score <% input_a.replace("@", " ") %> > <% input_b.replace("@", " ") %> \
+            run scoreboard players set <% output.replace("@", " ") %> 1
+    }
+}
+
+template bigger_than_or_equal_unsigned {
+    # output = (input_a >= input_b) ? 1 : 0
+    # Modified: input_a, input_b, output
+    with input_a:word input_b:word output:word {
+        scoreboard players set <% output.replace("@", " ") %> 0
+
+        execute if score <% input_a.replace("@", " ") %> matches ..-1 if score <% input_b.replace("@", " ") %> matches 0.. \
+            run scoreboard players set <% output.replace("@", " ") %> 1
+
+        execute if score <% input_a.replace("@", " ") %> matches 0.. if score <% input_b.replace("@", " ") %> matches 0.. \
+            if score <% input_a.replace("@", " ") %> >= <% input_b.replace("@", " ") %> \
+            run scoreboard players set <% output.replace("@", " ") %> 1
+
+        execute if score <% input_a.replace("@", " ") %> matches ..-1 if score <% input_b.replace("@", " ") %> matches ..-1 \
+            if score <% input_a.replace("@", " ") %> >= <% input_b.replace("@", " ") %> \
+            run scoreboard players set <% output.replace("@", " ") %> 1
+    }
+}
+
+template shift_left_logical {
+    # input_a = input_a << (input_b & 0x1F)
+    # Modified: input_a, input_b, output
+    # Modified: #binary_shift@org_jawbts_riscvmc2_bitwise_ops_temp, #binary_shift_2@org_jawbts_riscvmc2_bitwise_ops_temp
+    with input_a:word input_b:word {
+        scoreboard players set #binary_shift org_jawbts_riscvmc2_bitwise_ops_temp 31
+        template and <% input_b %> #binary_shift@org_jawbts_riscvmc2_bitwise_ops_temp #binary_shift_2@org_jawbts_riscvmc2_bitwise_ops_temp
+        REPEAT (1, 31) as i {
+            execute if score #binary_shift_2 org_jawbts_riscvmc2_bitwise_ops_temp matches <% i %> \
+                run scoreboard players operation \
+                <% input_a.replace("@", " ") %> *= #<% 2 ** i %> org_jawbts_riscvmc2_bitwise_ops_consts
+        }
+    }
+}
+
+# DON'T DIRECTLY USE THIS TEMPLATE, IT'S CREATING TOO MANY MCF FILES.
+template _shift_right_logical {
+    # output = input_a >>> (input_b & 0x1F)
+    # Modified: input_a, input_b
+    # Modified: #binary_shift@org_jawbts_riscvmc2_bitwise_ops_temp, #binary_shift_2@org_jawbts_riscvmc2_bitwise_ops_temp
+    with input_a:word input_b:word output:word {
+        scoreboard players set #binary_shift org_jawbts_riscvmc2_bitwise_ops_temp 31
+        template and <% input_b %> #binary_shift@org_jawbts_riscvmc2_bitwise_ops_temp #binary_shift_2@org_jawbts_riscvmc2_bitwise_ops_temp
+        REPEAT (0, 31) as i {
+            IF i == 0 {
+                scoreboard players operation <% output.replace("@", " ") %> = <% input_a.replace("@", " ") %>
+            } ELSE {
+                execute if score #binary_shift_2 org_jawbts_riscvmc2_bitwise_ops_temp matches <% i %> run {
+                    execute if score <% input_a.replace("@", " ") %> matches 0.. run {
+                        IF i == 31 {
+                            scoreboard players set <% output.replace("@", " ") %> 0
+                        } ELSE {
+                            scoreboard players operation <% output.replace("@", " ") %> = <% input_a.replace("@", " ") %>
+                            scoreboard players operation <% output.replace("@", " ") %> /= #<% 2 ** i %> org_jawbts_riscvmc2_bitwise_ops_consts
+                        }
+                    }
+                    execute if score <% input_a.replace("@", " ") %> matches ..-1 run {
+                        scoreboard players set <% output.replace("@", " ") %> <% 2 ** (31 - i) %>
+
+                        REPEAT (31, 1) as j {
+                            IF (j - i >= 1) {
+                                scoreboard players operation <% input_a.replace("@", " ") %> += <% input_a.replace("@", " ") %>
+                                execute if score <% input_a.replace("@", " ") %> matches ..-1 \
+                                    run scoreboard players add <% output.replace("@", " ") %> <% 2 ** (j - i - 1) %>
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+# DON'T DIRECTLY USE THIS TEMPLATE, IT'S CREATING TOO MANY MCF FILES.
+template _shift_right_arithmetic {
+    # output = input_a >> (input_b & 0x1F)
+    # Modified: input_a, input_b
+    # Modified: #binary_shift@org_jawbts_riscvmc2_bitwise_ops_temp, #binary_shift_2@org_jawbts_riscvmc2_bitwise_ops_temp
+    with input_a:word input_b:word output:word {
+        execute if score <% input_a.replace("@", " ") %> matches 0.. run {
+            template shift_right_logical <% input_a %> <% input_b %> <% output %>
+        } else run {
+            scoreboard players set #binary_shift org_jawbts_riscvmc2_bitwise_ops_temp 31
+            template and <% input_b %> #binary_shift@org_jawbts_riscvmc2_bitwise_ops_temp #binary_shift_2@org_jawbts_riscvmc2_bitwise_ops_temp
+            REPEAT (0, 31) as i {
+                IF i == 0 {
+                    scoreboard players operation <% output.replace("@", " ") %> = <% input_a.replace("@", " ") %>
+                } ELSE {
+                    execute if score #binary_shift_2 org_jawbts_riscvmc2_bitwise_ops_temp matches <% i %> run {
+                        scoreboard players set <% output.replace("@", " ") %> -1
+                        REPEAT (31, 1) as j {
+                            IF (j - i >= 1) {
+                                scoreboard players operation <% input_a.replace("@", " ") %> += <% input_a.replace("@", " ") %>
+                                execute if score <% input_a.replace("@", " ") %> matches 0.. \
+                                    run scoreboard players remove <% output.replace("@", " ") %> <% 2 ** (j - i - 1) %>
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+template shift_right_logical {
+    # output = input_a >>> (input_b & 0x1F)
+    # Modified: #input_a@org_jawbts_riscvmc2_bitwise_ops_temp #input_b@org_jawbts_riscvmc2_bitwise_ops_temp
+    # Modified: #output@org_jawbts_riscvmc2_bitwise_ops_temp
+    # Modified: #binary_shift@org_jawbts_riscvmc2_bitwise_ops_temp, #binary_shift_2@org_jawbts_riscvmc2_bitwise_ops_temp
+    with input_a:word input_b:word output:word {
+        scoreboard players operation #input_a org_jawbts_riscvmc2_bitwise_ops_temp = <% input_a.replace("@", " ") %>
+	    scoreboard players operation #input_b org_jawbts_riscvmc2_bitwise_ops_temp = <% input_b.replace("@", " ") %>
+	    function org_jawbts_riscvmc2_bitwise_ops:_shift_right_logical
+	    scoreboard players operation <% output.replace("@", " ") %> = #output org_jawbts_riscvmc2_bitwise_ops_temp
+    }
+}
+
+template shift_right_arithmetic {
+    # output = input_a >> (input_b & 0x1F)
+    # Modified: #input_a@org_jawbts_riscvmc2_bitwise_ops_temp #input_b@org_jawbts_riscvmc2_bitwise_ops_temp
+    # Modified: #output@org_jawbts_riscvmc2_bitwise_ops_temp
+    # Modified: #binary_shift@org_jawbts_riscvmc2_bitwise_ops_temp, #binary_shift_2@org_jawbts_riscvmc2_bitwise_ops_temp
+    with input_a:word input_b:word output:word {
+        scoreboard players operation #input_a org_jawbts_riscvmc2_bitwise_ops_temp = <% input_a.replace("@", " ") %>
+	    scoreboard players operation #input_b org_jawbts_riscvmc2_bitwise_ops_temp = <% input_b.replace("@", " ") %>
+	    function org_jawbts_riscvmc2_bitwise_ops:_shift_right_arithmetic
+	    scoreboard players operation <% output.replace("@", " ") %> = #output org_jawbts_riscvmc2_bitwise_ops_temp
+    }
+}

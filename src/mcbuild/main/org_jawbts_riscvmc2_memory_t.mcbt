@@ -1,0 +1,204 @@
+import ./org_jawbts_riscvmc2_bitwise_ops_t.mcbt
+
+# Every objective related parameter in this namespace is in this format:
+# <player name>@<scoreboard name>
+
+# For memory store structure, check main.
+
+template load_byte {
+    with addr:word dest:word signed:word {
+        scoreboard players operation #lb_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+        scoreboard players set #lb_temp org_jawbts_riscvmc2_memory_temp -4
+        template and #lb_addr@org_jawbts_riscvmc2_memory_temp #lb_temp@org_jawbts_riscvmc2_memory_temp #lb_temp_addr@org_jawbts_riscvmc2_memory_temp
+
+        scoreboard players operation #lb_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+        scoreboard players set #lb_temp org_jawbts_riscvmc2_memory_temp 3
+        template and #lb_addr@org_jawbts_riscvmc2_memory_temp #lb_temp@org_jawbts_riscvmc2_memory_temp #lb_temp_shift@org_jawbts_riscvmc2_memory_temp
+
+        scoreboard players operation #lb_temp_shift org_jawbts_riscvmc2_memory_temp *= #8 org_jawbts_riscvmc2_bitwise_ops_consts
+        scoreboard players operation #lb_temp_shift org_jawbts_riscvmc2_memory_temp *= #-1 org_jawbts_riscvmc2_bitwise_ops_consts
+        scoreboard players operation #lb_temp_shift org_jawbts_riscvmc2_memory_temp += #24 org_jawbts_riscvmc2_bitwise_ops_consts
+
+        execute store result storage org_jawbts_riscvmc2_temp:main memory.addr int 1 run scoreboard players get #lb_temp_addr org_jawbts_riscvmc2_memory_temp
+        block { with storage org_jawbts_riscvmc2_temp:main memory
+            scoreboard players operation #lb_temp_data org_jawbts_riscvmc2_memory_temp = #$(addr) org_jawbts_riscvmc2_memory
+        }
+
+        template shift_left_logical #lb_temp_data@org_jawbts_riscvmc2_memory_temp #lb_temp_shift@org_jawbts_riscvmc2_memory_temp
+
+        scoreboard players set #lb_temp_shift_2 org_jawbts_riscvmc2_memory_temp 24
+        template shift_right_logical #lb_temp_data@org_jawbts_riscvmc2_memory_temp #lb_temp_shift_2@org_jawbts_riscvmc2_memory_temp #lb_temp_data_2@org_jawbts_riscvmc2_memory_temp
+
+
+        IF signed == "signed" {
+            execute if score #lb_temp_data_2 org_jawbts_riscvmc2_memory_temp matches 128.. run {
+                scoreboard players set #lb_temp_sign org_jawbts_riscvmc2_memory_temp -128
+                scoreboard players operation #lb_temp_data_3 org_jawbts_riscvmc2_memory_temp = #lb_temp_data_2 org_jawbts_riscvmc2_memory_temp
+                template or #lb_temp_data_3@org_jawbts_riscvmc2_memory_temp #lb_temp_sign@org_jawbts_riscvmc2_memory_temp #lb_temp_data_2@org_jawbts_riscvmc2_memory_temp
+            }
+        }
+
+        scoreboard players operation <% dest.replace("@", " ") %> = #lb_temp_data_2 org_jawbts_riscvmc2_memory_temp
+    }
+}
+
+template load_halfword {
+    with addr:word dest:word signed:word {
+        scoreboard players operation #lh_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+
+        scoreboard players operation #lh_addr org_jawbts_riscvmc2_memory_temp %= #2 org_jawbts_riscvmc2_bitwise_ops_consts
+        execute if score #lh_addr org_jawbts_riscvmc2_memory_temp matches 1 run {
+            say Error: Address is not aligned in halfword load.
+        }
+
+        scoreboard players operation #lh_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+        scoreboard players set #lh_temp org_jawbts_riscvmc2_memory_temp -4
+        template and #lh_addr@org_jawbts_riscvmc2_memory_temp #lh_temp@org_jawbts_riscvmc2_memory_temp #lh_temp_addr@org_jawbts_riscvmc2_memory_temp
+
+        scoreboard players operation #lh_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+        scoreboard players set #lh_temp org_jawbts_riscvmc2_memory_temp 3
+        template and #lh_addr@org_jawbts_riscvmc2_memory_temp #lh_temp@org_jawbts_riscvmc2_memory_temp #lh_temp_shift@org_jawbts_riscvmc2_memory_temp
+
+        execute store result storage org_jawbts_riscvmc2_temp:main memory.addr int 1 run scoreboard players get #lh_temp_addr org_jawbts_riscvmc2_memory_temp
+        block { with storage org_jawbts_riscvmc2_temp:main memory
+            scoreboard players operation #lh_temp_data org_jawbts_riscvmc2_memory_temp = #$(addr) org_jawbts_riscvmc2_memory
+        }
+
+        execute if score #lh_temp_shift org_jawbts_riscvmc2_memory_temp matches 0 run {
+            scoreboard players set #lh_temp_shift_2 org_jawbts_riscvmc2_memory_temp 16
+            template shift_left_logical #lh_temp_data@org_jawbts_riscvmc2_memory_temp #lh_temp_shift_2@org_jawbts_riscvmc2_memory_temp
+        }
+
+        scoreboard players set #lh_temp_shift_2 org_jawbts_riscvmc2_memory_temp 16
+        template shift_right_logical #lh_temp_data@org_jawbts_riscvmc2_memory_temp #lh_temp_shift_2@org_jawbts_riscvmc2_memory_temp #lh_temp_data_2@org_jawbts_riscvmc2_memory_temp
+
+        IF signed == "signed" {
+            execute if score #lh_temp_data_2 org_jawbts_riscvmc2_memory_temp matches 32768.. run {
+                scoreboard players set #lh_temp_sign org_jawbts_riscvmc2_memory_temp -32768
+                scoreboard players operation #lh_temp_data_3 org_jawbts_riscvmc2_memory_temp = #lh_temp_data_2 org_jawbts_riscvmc2_memory_temp
+                template or #lh_temp_data_3@org_jawbts_riscvmc2_memory_temp #lh_temp_sign@org_jawbts_riscvmc2_memory_temp #lh_temp_data_2@org_jawbts_riscvmc2_memory_temp
+            }
+        }
+
+        scoreboard players operation <% dest.replace("@", " ") %> = #lh_temp_data_2 org_jawbts_riscvmc2_memory_temp
+    }
+}
+
+template load_word {
+    with addr:word dest:word {
+        scoreboard players operation #lw_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+
+        scoreboard players operation #lw_addr org_jawbts_riscvmc2_memory_temp %= #4 org_jawbts_riscvmc2_bitwise_ops_consts
+        execute unless score #lw_addr org_jawbts_riscvmc2_memory_temp matches 0 run {
+            say Error: Address is not aligned in word load.
+        }
+
+        execute store result storage org_jawbts_riscvmc2_temp:main memory.addr int 1 run scoreboard players get <% addr.replace("@", " ") %>
+        block { with storage org_jawbts_riscvmc2_temp:main memory
+            scoreboard players operation #lw_temp org_jawbts_riscvmc2_memory_temp = #$(addr) org_jawbts_riscvmc2_memory
+        }
+        scoreboard players operation <% dest.replace("@", " ") %> = #lw_temp org_jawbts_riscvmc2_memory_temp
+        #                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ This ******* stuff can't be put into the block above
+        # because it can be a ******* marco
+    }
+}
+
+template save_byte {
+    with addr:word src:word {
+        scoreboard players operation #sb_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+        scoreboard players set #sb_temp org_jawbts_riscvmc2_memory_temp -4
+        template and #sb_addr@org_jawbts_riscvmc2_memory_temp #sb_temp@org_jawbts_riscvmc2_memory_temp #sb_temp_addr@org_jawbts_riscvmc2_memory_temp
+        
+        scoreboard players operation #sb_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+        scoreboard players set #sb_temp org_jawbts_riscvmc2_memory_temp 3
+        template and #sb_addr@org_jawbts_riscvmc2_memory_temp #sb_temp@org_jawbts_riscvmc2_memory_temp #sb_temp_shift@org_jawbts_riscvmc2_memory_temp
+
+        execute if score #sb_temp_shift org_jawbts_riscvmc2_memory_temp matches 0 run {
+            scoreboard players set #sb_mask org_jawbts_riscvmc2_memory_temp -256
+        } else if score #sb_temp_shift org_jawbts_riscvmc2_memory_temp matches 1 run {
+            scoreboard players set #sb_mask org_jawbts_riscvmc2_memory_temp -65281
+        } else if score #sb_temp_shift org_jawbts_riscvmc2_memory_temp matches 2 run {
+            scoreboard players set #sb_mask org_jawbts_riscvmc2_memory_temp -16711681
+        } else if score #sb_temp_shift org_jawbts_riscvmc2_memory_temp matches 3 run {
+            scoreboard players set #sb_mask org_jawbts_riscvmc2_memory_temp 16777215
+        } else run {
+            say Error: Invalid shift value for byte store.
+        }
+
+        scoreboard players operation #sb_temp_shift org_jawbts_riscvmc2_memory_temp *= #8 org_jawbts_riscvmc2_bitwise_ops_consts
+
+        scoreboard players operation #sb_temp_src org_jawbts_riscvmc2_memory_temp = <% src.replace("@", " ") %>
+        scoreboard players set #sb_tmp org_jawbts_riscvmc2_memory_temp 255
+        template and #sb_temp_src@org_jawbts_riscvmc2_memory_temp #sb_tmp@org_jawbts_riscvmc2_memory_temp #sb_temp_src_2@org_jawbts_riscvmc2_memory_temp
+
+        template shift_left_logical #sb_temp_src_2@org_jawbts_riscvmc2_memory_temp #sb_temp_shift@org_jawbts_riscvmc2_memory_temp
+
+        execute store result storage org_jawbts_riscvmc2_temp:main memory.addr int 1 run scoreboard players get #sb_temp_addr org_jawbts_riscvmc2_memory_temp
+        block { with storage org_jawbts_riscvmc2_temp:main memory
+            scoreboard players operation #sb_temp_data org_jawbts_riscvmc2_memory_temp = #$(addr) org_jawbts_riscvmc2_memory
+            template and #sb_temp_data@org_jawbts_riscvmc2_memory_temp #sb_mask@org_jawbts_riscvmc2_memory_temp #sb_temp_data_2@org_jawbts_riscvmc2_memory_temp
+            template or #sb_temp_data_2@org_jawbts_riscvmc2_memory_temp #sb_temp_src_2@org_jawbts_riscvmc2_memory_temp #sb_temp_data_3@org_jawbts_riscvmc2_memory_temp
+            scoreboard players operation #$(addr) org_jawbts_riscvmc2_memory = #sb_temp_data_3 org_jawbts_riscvmc2_memory_temp
+        }
+    }
+}
+
+template save_halfword {
+    with addr:word src:word {
+        scoreboard players operation #sh_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+
+        scoreboard players operation #sh_addr org_jawbts_riscvmc2_memory_temp %= #2 org_jawbts_riscvmc2_bitwise_ops_consts
+        execute if score #sh_addr org_jawbts_riscvmc2_memory_temp matches 1 run {
+            say Error: Address is not aligned in halfword store.
+        }
+
+        scoreboard players operation #sh_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+        scoreboard players set #sh_temp org_jawbts_riscvmc2_memory_temp -4
+        template and #sh_addr@org_jawbts_riscvmc2_memory_temp #sh_temp@org_jawbts_riscvmc2_memory_temp #sh_temp_addr@org_jawbts_riscvmc2_memory_temp
+
+        scoreboard players operation #sh_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+        scoreboard players set #sh_temp org_jawbts_riscvmc2_memory_temp 3
+        template and #sh_addr@org_jawbts_riscvmc2_memory_temp #sh_temp@org_jawbts_riscvmc2_memory_temp #sh_temp_shift@org_jawbts_riscvmc2_memory_temp
+
+        execute if score #sh_temp_shift org_jawbts_riscvmc2_memory_temp matches 0 run {
+            scoreboard players set #sh_mask org_jawbts_riscvmc2_memory_temp -65536
+        } else if score #sh_temp_shift org_jawbts_riscvmc2_memory_temp matches 2 run {
+            scoreboard players set #sh_mask org_jawbts_riscvmc2_memory_temp 65535
+        } else run {
+            say Error: Invalid shift value for halfword store.
+        }
+
+        scoreboard players operation #sh_temp_shift org_jawbts_riscvmc2_memory_temp *= #8 org_jawbts_riscvmc2_bitwise_ops_consts
+
+        scoreboard players operation #sh_temp_src org_jawbts_riscvmc2_memory_temp = <% src.replace("@", " ") %>
+        scoreboard players set #sh_tmp org_jawbts_riscvmc2_memory_temp 65535
+        template and #sh_temp_src@org_jawbts_riscvmc2_memory_temp #sh_tmp@org_jawbts_riscvmc2_memory_temp #sh_temp_src_2@org_jawbts_riscvmc2_memory_temp
+
+        template shift_left_logical #sh_temp_src_2@org_jawbts_riscvmc2_memory_temp #sh_temp_shift@org_jawbts_riscvmc2_memory_temp
+
+        execute store result storage org_jawbts_riscvmc2_temp:main memory.addr int 1 run scoreboard players get #sh_temp_addr org_jawbts_riscvmc2_memory_temp
+        block { with storage org_jawbts_riscvmc2_temp:main memory
+            scoreboard players operation #sh_temp_data org_jawbts_riscvmc2_memory_temp = #$(addr) org_jawbts_riscvmc2_memory
+            template and #sh_temp_data@org_jawbts_riscvmc2_memory_temp #sh_mask@org_jawbts_riscvmc2_memory_temp #sh_temp_data_2@org_jawbts_riscvmc2_memory_temp
+            template or #sh_temp_data_2@org_jawbts_riscvmc2_memory_temp #sh_temp_src_2@org_jawbts_riscvmc2_memory_temp #sh_temp_data_3@org_jawbts_riscvmc2_memory_temp
+            scoreboard players operation #$(addr) org_jawbts_riscvmc2_memory = #sh_temp_data_3 org_jawbts_riscvmc2_memory_temp
+        }
+    }
+}
+
+template save_word {
+    with addr:word src:word {
+        scoreboard players operation #sw_addr org_jawbts_riscvmc2_memory_temp = <% addr.replace("@", " ") %>
+
+        scoreboard players operation #sw_addr org_jawbts_riscvmc2_memory_temp %= #4 org_jawbts_riscvmc2_bitwise_ops_consts
+        execute unless score #sw_addr org_jawbts_riscvmc2_memory_temp matches 0 run {
+            say Error: Address is not aligned in word store.
+        }
+
+        execute store result storage org_jawbts_riscvmc2_temp:main memory.addr int 1 run scoreboard players get <% addr.replace("@", " ") %>
+        scoreboard players operation #sw_temp org_jawbts_riscvmc2_memory_temp = <% src.replace("@", " ") %>
+        block { with storage org_jawbts_riscvmc2_temp:main memory
+            scoreboard players operation #$(addr) org_jawbts_riscvmc2_memory = #sw_temp org_jawbts_riscvmc2_memory_temp
+        }
+    }
+}

@@ -1,0 +1,29 @@
+import ./org_jawbts_riscvmc2_bitwise_ops_t.mcbt
+
+function onload minecraft:load {
+	scoreboard objectives add org_jawbts_riscvmc2_bitwise_ops_consts dummy
+	scoreboard objectives add org_jawbts_riscvmc2_bitwise_ops_temp dummy
+
+	scoreboard players set #-1 org_jawbts_riscvmc2_bitwise_ops_consts -1
+
+	REPEAT (0, 30) as i {
+		scoreboard players set #<% 2 ** i %> org_jawbts_riscvmc2_bitwise_ops_consts <% 2 ** i %>
+	}
+
+	scoreboard players set #<% 2 ** 31 %> org_jawbts_riscvmc2_bitwise_ops_consts -2147483648
+	scoreboard players set #24 org_jawbts_riscvmc2_bitwise_ops_consts 24
+}
+
+# Internal function
+function _shift_right_logical {
+	template _shift_right_logical #input_a@org_jawbts_riscvmc2_bitwise_ops_temp \
+		#input_b@org_jawbts_riscvmc2_bitwise_ops_temp \
+		#output@org_jawbts_riscvmc2_bitwise_ops_temp
+}
+
+# Internal function
+function _shift_right_arithmetic {
+	template _shift_right_arithmetic #input_a@org_jawbts_riscvmc2_bitwise_ops_temp \
+		#input_b@org_jawbts_riscvmc2_bitwise_ops_temp \
+		#output@org_jawbts_riscvmc2_bitwise_ops_temp
+}

@@ -1,0 +1,249 @@
+import ./org_jawbts_riscvmc2_rv32i_t.mcbt
+import ./org_jawbts_riscvmc2_memory_t.mcbt
+
+function i_add {
+	template i_add $(rs1) $(rs2) $(rd)
+}
+
+function i_addi {
+	template i_addi $(rs1) $(imm) $(rd)
+}
+
+function i_sub {
+	template i_sub $(rs1) $(rs2) $(rd)
+}
+
+function i_and {
+	template i_and $(rs1) $(rs2) $(rd)
+}
+
+function i_andi {
+	template i_andi $(rs1) $(imm) $(rd)
+}
+
+function i_or {
+	template i_or $(rs1) $(rs2) $(rd)
+}
+
+function i_ori {
+	template i_ori $(rs1) $(imm) $(rd)
+}
+
+function i_xor {
+	template i_xor $(rs1) $(rs2) $(rd)
+}
+
+function i_xori {
+	template i_xori $(rs1) $(imm) $(rd)
+}
+
+function i_sll {
+	template i_sll $(rs1) $(rs2) $(rd)
+}
+
+function i_slli {
+	template i_slli $(rs1) $(imm) $(rd)
+}
+
+function i_sra {
+	template i_sra $(rs1) $(rs2) $(rd)
+}
+
+function i_srai {
+	template i_srai $(rs1) $(imm) $(rd)
+}
+
+function i_srl {
+	template i_srl $(rs1) $(rs2) $(rd)
+}
+
+function i_srli {
+	template i_srli $(rs1) $(imm) $(rd)
+}
+
+function i_lui {
+	template i_lui $(imm) $(rd)
+}
+
+function i_auipc {
+	template i_auipc $(imm) $(rd)
+}
+
+function i_slt {
+	template i_slt $(rs1) $(rs2) $(rd)
+}
+
+function i_slti {
+	template i_slti $(rs1) $(imm) $(rd)
+}
+
+function i_sltu {
+	template i_sltu $(rs1) $(rs2) $(rd)
+}
+
+function i_sltiu {
+	template i_sltiu $(rs1) $(imm) $(rd)
+}
+
+function i_beq {
+	template i_beq $(rs1) $(rs2) $(imm)
+}
+
+function i_bne {
+	template i_bne $(rs1) $(rs2) $(imm)
+}
+
+function i_bge {
+	template i_bge $(rs1) $(rs2) $(imm)
+}
+
+function i_bgeu {
+	template i_bgeu $(rs1) $(rs2) $(imm)
+}
+
+function i_blt {
+	template i_blt $(rs1) $(rs2) $(imm)
+}
+
+function i_bltu {
+	template i_bltu $(rs1) $(rs2) $(imm)
+}
+
+function i_jal {
+	template i_jal $(imm) $(rd)
+}
+
+function i_jalr {
+	template i_jalr $(rs1) $(imm) $(rd)
+}
+
+function i_lw {
+	scoreboard players set #imm_rs1_lw org_jawbts_riscvmc2_register $(imm)
+	scoreboard players operation #imm_rs1_lw org_jawbts_riscvmc2_register += #$(rs1) org_jawbts_riscvmc2_register
+	template load_word #imm_rs1_lw@org_jawbts_riscvmc2_register #$(rd)@org_jawbts_riscvmc2_register
+	template _pc_add 4
+}
+
+function i_lh {
+	scoreboard players set #imm_rs1_lh org_jawbts_riscvmc2_register $(imm)
+	scoreboard players operation #imm_rs1_lh org_jawbts_riscvmc2_register += #$(rs1) org_jawbts_riscvmc2_register
+	template load_halfword #imm_rs1_lh@org_jawbts_riscvmc2_register #$(rd)@org_jawbts_riscvmc2_register signed
+
+	template _pc_add 4
+}
+
+function i_lhu {
+	scoreboard players set #imm_rs1_lhu org_jawbts_riscvmc2_register $(imm)
+	scoreboard players operation #imm_rs1_lhu org_jawbts_riscvmc2_register += #$(rs1) org_jawbts_riscvmc2_register
+	template load_halfword #imm_rs1_lhu@org_jawbts_riscvmc2_register #$(rd)@org_jawbts_riscvmc2_register unsigned
+	template _pc_add 4
+}
+
+function i_lb {
+	scoreboard players set #imm_rs1_lb org_jawbts_riscvmc2_register $(imm)
+	scoreboard players operation #imm_rs1_lb org_jawbts_riscvmc2_register += #$(rs1) org_jawbts_riscvmc2_register
+	template load_byte #imm_rs1_lb@org_jawbts_riscvmc2_register #$(rd)@org_jawbts_riscvmc2_register signed
+
+	template _pc_add 4
+}
+
+function i_lbu {
+	scoreboard players set #imm_rs1_lbu org_jawbts_riscvmc2_register $(imm)
+	scoreboard players operation #imm_rs1_lbu org_jawbts_riscvmc2_register += #$(rs1) org_jawbts_riscvmc2_register
+	template load_byte #imm_rs1_lbu@org_jawbts_riscvmc2_register #$(rd)@org_jawbts_riscvmc2_register unsigned
+
+	template _pc_add 4
+}
+
+function i_sw {
+	scoreboard players set #imm_rs1_sw org_jawbts_riscvmc2_register $(imm)
+	scoreboard players operation #imm_rs1_sw org_jawbts_riscvmc2_register += #$(rs1) org_jawbts_riscvmc2_register
+	template save_word #imm_rs1_sw@org_jawbts_riscvmc2_register #$(rs2)@org_jawbts_riscvmc2_register
+
+	template _pc_add 4
+}
+
+function i_sh {
+	scoreboard players set #imm_rs1_sh org_jawbts_riscvmc2_register $(imm)
+	scoreboard players operation #imm_rs1_sh org_jawbts_riscvmc2_register += #$(rs1) org_jawbts_riscvmc2_register
+	template save_halfword #imm_rs1_sh@org_jawbts_riscvmc2_register #$(rs2)@org_jawbts_riscvmc2_register
+
+	template _pc_add 4
+}
+
+function i_sb {
+	scoreboard players set #imm_rs1_sb org_jawbts_riscvmc2_register $(imm)
+	scoreboard players operation #imm_rs1_sb org_jawbts_riscvmc2_register += #$(rs1) org_jawbts_riscvmc2_register
+	template save_byte #imm_rs1_sb@org_jawbts_riscvmc2_register #$(rs2)@org_jawbts_riscvmc2_register
+
+	template _pc_add 4
+}
+
+function i_should_not_call {
+	say Error: 'Should Not Call' Function is called
+}
+
+function i_ecall {
+	scoreboard players set #ecall_block org_jawbts_riscvmc2 1
+	template _pc_add 4
+}
+
+function ecall {
+	# a7 ecall number
+	scoreboard players operation #ecall org_jawbts_riscvmc2_temp = #17 org_jawbts_riscvmc2_register
+
+	execute if score #ecall org_jawbts_riscvmc2_temp matches 63 run {
+		# read
+		execute if score #10 org_jawbts_riscvmc2_register matches 0 run {
+			scoreboard players operation #ptr org_jawbts_riscvmc2_temp = #11 org_jawbts_riscvmc2_register
+			scoreboard players set #count org_jawbts_riscvmc2_temp 0
+			block {
+				execute if score #count org_jawbts_riscvmc2_temp < #12 org_jawbts_riscvmc2_register if data storage org_jawbts_riscvmc2_temp:ascii buffer.in[0] run {
+					execute store result score #temp org_jawbts_riscvmc2_temp run data get storage org_jawbts_riscvmc2_temp:ascii buffer.in[0]
+					template save_byte #ptr@org_jawbts_riscvmc2_temp #temp@org_jawbts_riscvmc2_temp
+					data remove storage org_jawbts_riscvmc2_temp:ascii buffer.in[0]
+
+					scoreboard players add #count org_jawbts_riscvmc2_temp 1
+					scoreboard players add #ptr org_jawbts_riscvmc2_temp 1
+					function ^1
+
+					# as long as something is read, ecall is not blocked
+					scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+				}
+			}
+			scoreboard players operation #10 org_jawbts_riscvmc2_register = #count org_jawbts_riscvmc2_temp
+		} else run {
+			say Error: Invalid file descriptor
+		}
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 64 run {
+		# write
+		execute if score #10 org_jawbts_riscvmc2_register matches 1 run {
+			scoreboard players operation #ptr org_jawbts_riscvmc2_temp = #11 org_jawbts_riscvmc2_register
+			scoreboard players set #count org_jawbts_riscvmc2_temp 0
+			scoreboard players set #temp org_jawbts_riscvmc2_temp 0
+			block {
+				execute if score #count org_jawbts_riscvmc2_temp < #12 org_jawbts_riscvmc2_register run {
+					template load_byte #ptr@org_jawbts_riscvmc2_temp #temp@org_jawbts_riscvmc2_temp unsigned
+					execute store result storage org_jawbts_riscvmc2_temp:ascii buffer.temp int 1 run scoreboard players get #temp org_jawbts_riscvmc2_temp
+					data modify storage org_jawbts_riscvmc2_temp:ascii buffer.out append from storage org_jawbts_riscvmc2_temp:ascii buffer.temp
+
+					scoreboard players add #count org_jawbts_riscvmc2_temp 1
+					scoreboard players add #ptr org_jawbts_riscvmc2_temp 1
+					function ^1
+				}
+			}
+			scoreboard players operation #10 org_jawbts_riscvmc2_register = #count org_jawbts_riscvmc2_temp
+
+			scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+		} else run {
+			say Error: Invalid file descriptor
+		}
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 93 run {
+		# exit
+		scoreboard players set #running org_jawbts_riscvmc2 0
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+		tellraw @a [{text: "Exited with code "}, {score: {name: "#10", objective: "org_jawbts_riscvmc2_register"}}]
+	} else run {
+		say Error: Invalid ecall number
+	}
+}

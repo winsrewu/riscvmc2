@@ -1,0 +1,53 @@
+import ./org_jawbts_riscvmc2_ascii_js.js
+
+# provides string as input & output buffer (exposed to outter layer).
+# provides int array as input & output buffer (exposed to the emulator).
+# insert into index -1 and extract from 0.
+
+function onload minecraft:load {
+	data modify storage org_jawbts_riscvmc2_temp:ascii buffer.in set value []
+    data modify storage org_jawbts_riscvmc2_temp:ascii buffer.out set value []
+
+    data modify storage org_jawbts_riscvmc2_temp:ascii buffer.in_char set value ""
+    data modify storage org_jawbts_riscvmc2_temp:ascii buffer.out_char set value ""
+
+    # temp purpose
+    data modify storage org_jawbts_riscvmc2_temp:ascii buffer.temp set value 0
+    data modify storage org_jawbts_riscvmc2_temp:ascii buffer.temp_char set value ""
+}
+
+function tick minecraft:tick {
+    block {
+        execute if data storage org_jawbts_riscvmc2_temp:ascii buffer.out[0] run {
+            data modify storage org_jawbts_riscvmc2_temp:ascii buffer.temp set from storage org_jawbts_riscvmc2_temp:ascii buffer.out[0]
+
+            REPEAT (0, 255) as i {
+                execute if data storage org_jawbts_riscvmc2_temp:ascii {buffer: {temp: <%i%>}} run { with storage org_jawbts_riscvmc2_temp:ascii buffer
+                    $data modify storage org_jawbts_riscvmc2_temp:ascii buffer.out_char set value "$(out_char)<% get_should_print(i) %>"
+                }
+            }
+
+            data remove storage org_jawbts_riscvmc2_temp:ascii buffer.out[0]
+
+            function ^1
+        }
+    }
+
+    block {
+        execute if data storage org_jawbts_riscvmc2_temp:ascii buffer.in_char unless data storage org_jawbts_riscvmc2_temp:ascii {buffer: {in_char: ""}} run {
+            data modify storage org_jawbts_riscvmc2_temp:ascii buffer.temp_char set string storage org_jawbts_riscvmc2_temp:ascii buffer.in_char 0 1
+
+            REPEAT (0, 255) as i {
+                IF is_printable(i) {
+                    execute if data storage org_jawbts_riscvmc2_temp:ascii {buffer: {temp_char: "<% get_should_print(i) %>"}} run {
+                        data modify storage org_jawbts_riscvmc2_temp:ascii buffer.in append value <%i%>
+                    }
+                }
+            }
+
+            data modify storage org_jawbts_riscvmc2_temp:ascii buffer.in_char set string storage org_jawbts_riscvmc2_temp:ascii buffer.in_char 1
+
+            function ^1
+        }
+    }
+}

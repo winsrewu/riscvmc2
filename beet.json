@@ -1,0 +1,14 @@
+{
+    "name": "riscvmc2",
+    "version": "0.0.1",
+    "description": "A RISC-V to Minecraft functions compilor",
+    "require": [],
+    "data_pack": {
+        "load": [],
+        "pack_format": 61
+    },
+    "pipeline": [
+        "compile.main"
+    ],
+    "output": "D:/Mc/.minecraft/versions/1.21.5-axiom/saves/riscvmc2/datapacks"
+}

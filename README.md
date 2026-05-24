@@ -14,7 +14,7 @@ About **69** commands per instruction.
 ## Similar Repositories
 - https://github.com/winsrewu/riscvmc Generation #1 Emulator. Super Slow.
 - https://github.com/SuperTails/riscvcraft Another emulator but with rv32ima. This author also have llvm / wasm support for mc datapack.
-- https://github.com/Steve3184/MC-RVVM Another compilor.
+- https://github.com/Steve3184/MC-RVVM Another compiler.
 - https://github.com/Steve3184/mcrvemu Another emulator.
 
 ## Versioning

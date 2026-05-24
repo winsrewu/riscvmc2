@@ -65,6 +65,12 @@ You can check ``app/c-common`` for example.
 
 Check the comments in the files.
 
+## Contributing
+
+Before prs, let me know about it first please.  
+
+This project uses Black Formatter.
+
 ## TODO
 
 - [ ] ``Execute`` based fast iterations

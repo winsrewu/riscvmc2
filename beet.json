@@ -1,7 +1,7 @@
 {
     "name": "riscvmc2",
     "version": "0.0.1",
-    "description": "A RISC-V to Minecraft functions compilor",
+    "description": "A RISC-V to Minecraft functions compiler",
     "require": [],
     "data_pack": {
         "load": [],

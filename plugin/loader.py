@@ -6,12 +6,15 @@ import shutil
 
 from beet import Context
 
-py_src_dir = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / "src" / "python"
+py_src_dir = (
+    Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / "src" / "python"
+)
 sys.path.append(py_src_dir.as_posix())
 
 from memory import *
 from encoder import encode_to_scoreboard, encode_to_function
 from decoder import PyriscvDecodedInstruction
+
 
 def load_memory_file(ctx: Context, mem_path: str, reg_path: str = None):
     """
@@ -42,17 +45,17 @@ def load_memory_file(ctx: Context, mem_path: str, reg_path: str = None):
     if reg_path is not None:
         with open(reg_path, "rb") as f:
             hasher.update(f.read())
-    
+
     if prev_source_hash == hasher.hexdigest() and (build_dir / "data").exists():
         ctx.data.load(build_dir)
         return
-    
+
     shutil.rmtree(build_dir, ignore_errors=True)
     functions_dir.mkdir(exist_ok=True, parents=True)
 
     mem = read_verilog_v8(mem_path, default_keep_data_section)
     dat = process_memory_into_data(mem)
-    
+
     with open(functions_dir / "data.mcfunction", "w") as f:
         for s in encode_to_scoreboard(dat):
             f.write(f"{s}\n")
@@ -67,7 +70,7 @@ def load_memory_file(ctx: Context, mem_path: str, reg_path: str = None):
         except Exception as ex:
             print("Error at address 0x%x, data 0x%x" % (int(addr), int(inst)))
             raise ex
-        res += f"{addr.signed()}:\"{name} {arg}\","
+        res += f'{addr.signed()}:"{name} {arg}",'
         if len(res) >= 10000:
             res_l.append(res)
             res = ""
@@ -87,9 +90,13 @@ def load_memory_file(ctx: Context, mem_path: str, reg_path: str = None):
             for i in range(32):
                 reg[i] = Operand(int(f.readline().strip(), 16)).signed()
             with open(functions_dir / "regs.mcfunction", "w") as f:
-                f.write(f"scoreboard players set #pc org_jawbts_riscvmc2_register {pc}\n")
+                f.write(
+                    f"scoreboard players set #pc org_jawbts_riscvmc2_register {pc}\n"
+                )
                 for i in range(32):
-                    f.write(f"scoreboard players set #{i} org_jawbts_riscvmc2_register {reg[i]}\n")
+                    f.write(
+                        f"scoreboard players set #{i} org_jawbts_riscvmc2_register {reg[i]}\n"
+                    )
                 f.write("say Registers loaded\n")
 
     with open(functions_dir / "all.mcfunction", "w") as f:

@@ -70,9 +70,9 @@ Check the comments in the files.
 
 ## Contributing
 
-Before prs, let me know about it first please.  
+Before PRs, let me know about it first please.  
 
-This project uses Black Formatter.
+This project uses Black Formatter for python code.
 
 ## TODO
 
@@ -80,5 +80,9 @@ This project uses Black Formatter.
 - [ ] M extension
 - [ ] Linux in Minecraft
 - [ ] ``Execute`` magic based faster bitwise operations & module management
-- [ ] Native Minecraft command / function calls based on custom instruction
+- [ ] Native Minecraft command / function calls based on custom instruction (Something like ``ecall``)
 - [ ] Performance
+
+## NOT TODO
+
+- Privileged architecture. This will bring extra complexity. Unless you have a elegant and high quality way to implement it.

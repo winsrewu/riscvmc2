@@ -14,6 +14,23 @@ from encoder import encode_to_scoreboard, encode_to_function
 from decoder import PyriscvDecodedInstruction
 
 def load_memory_file(ctx: Context, mem_path: str, reg_path: str = None):
+    """
+    Loads memory, optional registers and pc to datapack context.
+
+    mem_path: path to a verilog format memory file
+    reg_path: path to pc & registers file, format:
+    ```
+    0x1298      # pc
+    0x0         # reg x0
+    0x1288      # reg x1
+    0x2204ca2c  # ...
+    0x2004901a
+    0x0
+    0x37504
+    # ...
+    ```
+    """
+
     hasher = hashlib.sha256()
     prev_source_hash = ctx.cache["riscvmc2"].json.get("source_hash", None)
     build_dir = ctx.cache["riscvmc2"].directory / "datapack"

@@ -40,6 +40,9 @@ And do ``beet build`` to encode the program into MC functions.
 Actually, beet will generate a datapack and install directly into your world.
 Check ``compile.py`` for details and ``beet.json`` to change the destination.
 
+For some program which requires a super long boot up, loading form snapshots (or I call it dumps) is recommanded.
+Check the dump system call in https://github.com/winsrewu/pyriscv. You need to spilt the output dump file into two and then check ``plugin/loader.py``.
+
 ## Techincal Details
 
 ### Project Structure

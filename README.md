@@ -2,7 +2,7 @@
 
 A tool to compile RISC-V instructions to Minecraft commands.
 
-Now supports U-Mode RV32I. (No Zicsr, Zifencei, privilege architecture support)
+Now supports U-Mode RV32I. (No Zicsr, Zifencei, privileged architecture support)
 
 This project is developed under Minecraft 1.21.5, not much tricks are used.
 So I think versions around it or upper ones can work too.

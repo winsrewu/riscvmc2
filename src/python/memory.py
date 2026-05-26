@@ -1,4 +1,4 @@
-from memory_slice import MemorySlice32, Operand
+from .memory_slice import MemorySlice32, Operand
 
 
 def default_keep_text_section(addr):

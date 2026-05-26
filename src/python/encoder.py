@@ -1,6 +1,6 @@
-from decoder import PyriscvDecodedInstruction
-from pyriscv_definition import *
-from memory_slice import *
+from .decoder import PyriscvDecodedInstruction
+from .pyriscv_definition import *
+from .memory_slice import *
 
 
 def encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, dict]:

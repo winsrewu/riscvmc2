@@ -1,5 +1,5 @@
-from pyriscv_definition import *
-from memory_slice import *
+from .pyriscv_definition import *
+from .memory_slice import *
 
 
 class PyriscvDecodedInstruction:

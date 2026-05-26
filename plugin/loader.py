@@ -1,19 +1,13 @@
-from pathlib import Path
-import sys
-import os
 import hashlib
 import shutil
 
 from beet import Context
 
-py_src_dir = (
-    Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / "src" / "python"
-)
-sys.path.append(py_src_dir.as_posix())
+from src.python.memory import *
+from src.python.encoder import encode_to_scoreboard, encode_to_function
+from src.python.decoder import PyriscvDecodedInstruction
+from src.python.config import *
 
-from memory import *
-from encoder import encode_to_scoreboard, encode_to_function
-from decoder import PyriscvDecodedInstruction
 
 
 def load_memory_file(ctx: Context, mem_path: str, reg_path: str = None):

@@ -24,6 +24,13 @@ def build_mcb(ctx: Context):
                 hasher.update(f.read())
 
         def update_from_directory(path: Path):
+            if (
+                path.name == ".beet_cache"
+                or path.name == ".git"
+                or path.name == "__pycache__"
+            ):
+                return
+
             assert path.is_dir()
             hasher.update(path.as_posix().encode())
             for path in sorted(path.iterdir()):

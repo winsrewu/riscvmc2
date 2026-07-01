@@ -82,6 +82,7 @@ This project uses Black Formatter for python code.
 - [ ] ``Execute`` magic based faster bitwise operations & module management
 - [ ] Native Minecraft command / function calls based on custom instruction (Something like ``ecall``)
 - [ ] Performance
+- [ ] Reload without ``/reload`` command
 
 ## NOT TODO
 

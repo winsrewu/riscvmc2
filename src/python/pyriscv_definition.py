@@ -54,3 +54,48 @@ class PyriscvFunct3LoadStore(OptionalValueEnum):
     W = 0b010
     BU = 0b100
     HU = 0b101
+
+
+INSTRUCTION_LIST = {
+    "I": [
+        "add",
+        "addi",
+        "sub",
+        "and",
+        "andi",
+        "or",
+        "ori",
+        "xor",
+        "xori",
+        "sll",
+        "slli",
+        "sra",
+        "srai",
+        "srl",
+        "srli",
+        "lui",
+        "auipc",
+        "slt",
+        "slti",
+        "sltu",
+        "sltiu",
+        "beq",
+        "bne",
+        "bge",
+        "bgeu",
+        "blt",
+        "bltu",
+        "jal",
+        "jalr",
+        "lw",
+        "lh",
+        "lhu",
+        "lb",
+        "lbu",
+        "sw",
+        "sh",
+        "sb",
+        "should_not_call",
+        "ecall",
+    ]
+}

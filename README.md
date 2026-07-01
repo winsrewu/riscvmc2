@@ -47,12 +47,38 @@ Check the dump system call in https://github.com/winsrewu/pyriscv. You need to s
 
 ### Project Structure
 
-The linker script devided the whole memory into two sectors, text (unmodifiable but executable) and data (modifiable but unexecutable).  
-All data in the text sector should be vaild instructions, and they will be encoded into a series of function calls. We have one function for every instruction.  
-All data in the data sector is stored into scoreboard.
+#### Reference Module and Tests
 
 This project has a reference model, https://github.com/winsrewu/pyriscv,
 a python emulator. We have tests there, and tests here.
+
+Unfortuately RISC-V's official test kit doesn't like U-mode only emulators.
+So we have our own.
+
+#### Memory Structure
+
+The linker script devided the whole memory into two sectors, text (unmodifiable but executable) and data (modifiable but unexecutable).  
+All data in the text sector should be vaild instructions, and they will be encoded into a series of function calls. Details will be explained later.
+All data in the data sector is stored into scoreboard.
+
+#### Text Storage
+
+We have two options to store the text,
+one is storing function names (we generate one function for each type of instruction in this case, we call it standalone) and arguments in Minecraft Storage as string and running via marco.
+Another is storing them in Minecraft Function, one function file per vaild instruction.
+
+In the second case, some type of the instruction may be too complicated that inline expand them is not a wise choice, so they will call a standalone one instead. You can set whether to inline expand a type of instruction in the config.
+
+### Build Process
+
++ Stage 1  
+Built-in sources (e.g. standalone instruction implements).  
+No cache due to that almost all changes can affect this stage, and it's fast.
+
++ Stage 2
+Custom sources (e.g. the C++ files).  
+Cache default to true.
+
 
 ### System Calls Table
 
@@ -63,6 +89,10 @@ a python emulator. We have tests there, and tests here.
 | 93     | exit     | error_code | - |
 
 You can check ``app/c-common`` for example.
+
+### Build Config
+
+Check the comments in the config python source code.
 
 ### Others
 

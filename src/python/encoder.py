@@ -20,13 +20,13 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
         raise ValueError("Invalid code class")
 
     if decoded_inst.opcode == PyriscvOpCode.JAL:
-        return "i_jal", {
+        return "jal", {
             "rd": decoded_inst.rd.unsigned(),
             "imm": decoded_inst.immj.signed(),
         }
 
     if decoded_inst.opcode == PyriscvOpCode.JALR:
-        return "i_jalr", {
+        return "jalr", {
             "rd": decoded_inst.rd.unsigned(),
             "rs1": decoded_inst.rs1.unsigned(),
             "imm": decoded_inst.immi.signed(),
@@ -35,17 +35,17 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
     if decoded_inst.opcode == PyriscvOpCode.BRANCH:
         name = None
         if decoded_inst.funct3branch == PyriscvFunct3Branch.BEQ:
-            name = "i_beq"
+            name = "beq"
         if decoded_inst.funct3branch == PyriscvFunct3Branch.BNE:
-            name = "i_bne"
+            name = "bne"
         if decoded_inst.funct3branch == PyriscvFunct3Branch.BGE:
-            name = "i_bge"
+            name = "bge"
         if decoded_inst.funct3branch == PyriscvFunct3Branch.BGEU:
-            name = "i_bgeu"
+            name = "bgeu"
         if decoded_inst.funct3branch == PyriscvFunct3Branch.BLT:
-            name = "i_blt"
+            name = "blt"
         if decoded_inst.funct3branch == PyriscvFunct3Branch.BLTU:
-            name = "i_bltu"
+            name = "bltu"
         if name is None:
             raise ValueError("Invalid branch funct3")
 
@@ -58,21 +58,21 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
     if decoded_inst.opcode == PyriscvOpCode.OP_IMM:
         name = None
         if decoded_inst.funct3op == PyriscvFunct3Op.ADD_SUB:
-            name = "i_addi"
+            name = "addi"
         if decoded_inst.funct3op == PyriscvFunct3Op.AND:
-            name = "i_andi"
+            name = "andi"
         if decoded_inst.funct3op == PyriscvFunct3Op.OR:
-            name = "i_ori"
+            name = "ori"
         if decoded_inst.funct3op == PyriscvFunct3Op.XOR:
-            name = "i_xori"
+            name = "xori"
         if decoded_inst.funct3op == PyriscvFunct3Op.SLL:
-            name = "i_slli"
+            name = "slli"
         if decoded_inst.funct3op == PyriscvFunct3Op.SRL_SRA:
-            name = "i_srli"
+            name = "srli"
         if decoded_inst.funct3op == PyriscvFunct3Op.SLT:
-            name = "i_slti"
+            name = "slti"
         if decoded_inst.funct3op == PyriscvFunct3Op.SLTU:
-            name = "i_sltiu"
+            name = "sltiu"
         if name is None:
             raise ValueError("Invalid op_imm funct3")
 
@@ -86,30 +86,30 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
         name = None
         if decoded_inst.funct3op == PyriscvFunct3Op.ADD_SUB:
             if int(decoded_inst.funct7) == 0x00:
-                name = "i_add"
+                name = "add"
             elif int(decoded_inst.funct7) == 0x20:
-                name = "i_sub"
+                name = "sub"
             else:
                 raise ValueError("Invalid funct7 for add/sub")
         if decoded_inst.funct3op == PyriscvFunct3Op.AND:
-            name = "i_and"
+            name = "and"
         if decoded_inst.funct3op == PyriscvFunct3Op.OR:
-            name = "i_or"
+            name = "or"
         if decoded_inst.funct3op == PyriscvFunct3Op.XOR:
-            name = "i_xor"
+            name = "xor"
         if decoded_inst.funct3op == PyriscvFunct3Op.SLL:
-            name = "i_sll"
+            name = "sll"
         if decoded_inst.funct3op == PyriscvFunct3Op.SRL_SRA:
             if int(decoded_inst.funct7) == 0x00:
-                name = "i_srl"
+                name = "srl"
             elif int(decoded_inst.funct7) == 0x20:
-                name = "i_sra"
+                name = "sra"
             else:
                 raise ValueError("Invalid funct7 for srl/sra")
         if decoded_inst.funct3op == PyriscvFunct3Op.SLT:
-            name = "i_slt"
+            name = "slt"
         if decoded_inst.funct3op == PyriscvFunct3Op.SLTU:
-            name = "i_sltu"
+            name = "sltu"
         if name is None:
             raise ValueError("Invalid op_imm funct3")
 
@@ -120,13 +120,13 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
         }
 
     if decoded_inst.opcode == PyriscvOpCode.LUI:
-        return "i_lui", {
+        return "lui", {
             "rd": decoded_inst.rd.unsigned(),
             "imm": decoded_inst.immu.unsigned(),
         }
 
     if decoded_inst.opcode == PyriscvOpCode.AUIPC:
-        return "i_auipc", {
+        return "auipc", {
             "rd": decoded_inst.rd.unsigned(),
             "imm": decoded_inst.immu.unsigned(),
         }
@@ -134,15 +134,15 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
     if decoded_inst.opcode == PyriscvOpCode.LOAD:
         name = None
         if decoded_inst.funct3loadstore == PyriscvFunct3LoadStore.W:
-            name = "i_lw"
+            name = "lw"
         if decoded_inst.funct3loadstore == PyriscvFunct3LoadStore.H:
-            name = "i_lh"
+            name = "lh"
         if decoded_inst.funct3loadstore == PyriscvFunct3LoadStore.HU:
-            name = "i_lhu"
+            name = "lhu"
         if decoded_inst.funct3loadstore == PyriscvFunct3LoadStore.B:
-            name = "i_lb"
+            name = "lb"
         if decoded_inst.funct3loadstore == PyriscvFunct3LoadStore.BU:
-            name = "i_lbu"
+            name = "lbu"
         if name is None:
             raise ValueError("Invalid load funct3")
 
@@ -155,11 +155,11 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
     if decoded_inst.opcode == PyriscvOpCode.STORE:
         name = None
         if decoded_inst.funct3loadstore == PyriscvFunct3LoadStore.W:
-            name = "i_sw"
+            name = "sw"
         if decoded_inst.funct3loadstore == PyriscvFunct3LoadStore.H:
-            name = "i_sh"
+            name = "sh"
         if decoded_inst.funct3loadstore == PyriscvFunct3LoadStore.B:
-            name = "i_sb"
+            name = "sb"
         if name is None:
             raise ValueError("Invalid store funct3")
 
@@ -170,12 +170,12 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
         }
 
     if Operand(decoded_inst.raw_instruction).unsigned() == 0x00000073:
-        return "i_ecall", {}
+        return "ecall", {}
 
     # There's a hardcoded csr instruction in std c lib, for exception handling
     # But we doesn't support it.
     if Operand(decoded_inst.raw_instruction).unsigned() == 0xC2202573:  # csrrs a0, zero
-        return "i_should_not_call", {}
+        return "should_not_call", {}
 
     raise ValueError("Invalid instruction")
 

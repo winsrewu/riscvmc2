@@ -1,6 +1,10 @@
 import ./org_jawbts_riscvmc2_rv32i_t.mcbt
 import ./org_jawbts_riscvmc2_memory_t.mcbt
 
+# The comment below is to help the project locate the instruction definitions.
+# Do not remove.
+
+# #BEGIN INST DEF
 function i_add {
 	template i_add $(rs1) $(rs2) $(rd)
 }
@@ -187,6 +191,10 @@ function i_ecall {
 	scoreboard players set #ecall_block org_jawbts_riscvmc2 1
 	template _pc_add 4
 }
+# #END INST DEF
+
+# The comment above is to help the project locate the instruction definitions.
+# Do not remove.
 
 function ecall {
 	# a7 ecall number

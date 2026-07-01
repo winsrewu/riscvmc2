@@ -85,7 +85,9 @@ function tick {
 			$data modify storage org_jawbts_riscvmc2_temp:main inst_temp.inst set from storage org_jawbts_riscvmc2_temp:main inst.$(pc)
 		}
 		block { with storage org_jawbts_riscvmc2_temp:main inst_temp
-			$function org_jawbts_riscvmc2_rv32i:$(inst)
+			<%%
+				emit(`$function ${config.instructionNamespace}:$(inst)`)
+			%%>
 		}
 	} else execute unless score #running org_jawbts_riscvmc2 matches 0 unless score #ecall_block org_jawbts_riscvmc2 matches 0 run {
 		function org_jawbts_riscvmc2_rv32i:ecall
@@ -109,17 +111,19 @@ function debug_tick {
 			}
 		}
 		data remove storage riscvmc:pc_log regs[0]
-			
+
 		execute unless score #running org_jawbts_riscvmc2 matches 0 run {
 			execute store result storage org_jawbts_riscvmc2_temp:main inst_temp.pc int 1 run scoreboard players get #pc org_jawbts_riscvmc2_register
 			block { with storage org_jawbts_riscvmc2_temp:main inst_temp
 				$data modify storage org_jawbts_riscvmc2_temp:main inst_temp.inst set from storage org_jawbts_riscvmc2_temp:main inst.$(pc)
 			}
 			block { with storage org_jawbts_riscvmc2_temp:main inst_temp
-				$function org_jawbts_riscvmc2_rv32i:$(inst)
+				<%%
+					emit(`$function ${config.instructionNamespace}:$(inst)`)
+				%%>
 			}
 		}
-		
+
 		# tellraw @a [{text: "Current PC: "}, {score: {name: "#pc", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x0: "}, {score: {name: "#0", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x1: "}, {score: {name: "#1", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x2: "}, {score: {name: "#2", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x3: "}, {score: {name: "#3", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x4: "}, {score: {name: "#4", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x5: "}, {score: {name: "#5", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x6: "}, {score: {name: "#6", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x7: "}, {score: {name: "#7", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x8: "}, {score: {name: "#8", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x9: "}, {score: {name: "#9", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x10: "}, {score: {name: "#10", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x11: "}, {score: {name: "#11", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x12: "}, {score: {name: "#12", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x13: "}, {score: {name: "#13", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x14: "}, {score: {name: "#14", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x15: "}, {score: {name: "#15", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x16: "}, {score: {name: "#16", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x17: "}, {score: {name: "#17", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x18: "}, {score: {name: "#18", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x19: "}, {score: {name: "#19", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x20: "}, {score: {name: "#20", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x21: "}, {score: {name: "#21", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x22: "}, {score: {name: "#22", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x23: "}, {score: {name: "#23", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x24: "}, {score: {name: "#24", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x25: "}, {score: {name: "#25", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x26: "}, {score: {name: "#26", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x27: "}, {score: {name: "#27", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x28: "}, {score: {name: "#28", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x29: "}, {score: {name: "#29", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x30: "}, {score: {name: "#30", objective: "org_jawbts_riscvmc2_register"}}, {text: " , x31: "}, {score: {name: "#31", objective: "org_jawbts_riscvmc2_register"}}]
 	} else execute unless score #running org_jawbts_riscvmc2 matches 0 unless score #ecall_block org_jawbts_riscvmc2 matches 0 run {
 		function org_jawbts_riscvmc2_rv32i:ecall

@@ -83,6 +83,7 @@ def load_memory_file(
     ):
         # uses cache
         ctx.data.load(datapack_build_dir)
+        ctx.data.load(instruction_mcbuild_functions_dir)
         return
 
     # cleanup for rebuild

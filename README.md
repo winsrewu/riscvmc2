@@ -49,7 +49,7 @@ Check the dump system call in https://github.com/winsrewu/pyriscv. You need to s
 
 To summon the terminal, do
 ``
-/summon minecraft:text_display ~ ~ ~ {Tags:["riscvmc2_terminal"], alignment:"left"}
+/summon minecraft:text_display ~ ~ ~ {Tags:["riscvmc2_terminal"], alignment:"left", line_width:400}
 ``.
 
 To print the keyboard to a player, do

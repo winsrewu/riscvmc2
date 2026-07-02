@@ -30,5 +30,17 @@ class PyriscvConfig(BaseModel):
     # recommanded to be short for performance (I guess)
     instruction_namespace: str = "a"
 
+    # empty namespace for instruction functions
+    # recommanded to be short for performance (I guess)
+    instruction_function_namespace: str = "b"
+
     # Whether to cache stage 2
     stage_2_cache: bool = True
+
+    def set_expand_instruction_function(
+        self, instruction_functions_to_expand: list[str]
+    ):
+        for f in instruction_functions_to_expand:
+            if f not in self.instruction_function_expand:
+                raise ValueError(f"Unknown instruction function: {f}")
+            self.instruction_function_expand[f] = True

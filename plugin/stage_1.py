@@ -5,7 +5,7 @@ import json
 import subprocess
 from beet import Context
 
-from src.python.config import PyriscvConfig
+from src.python.config import PyriscvConfig, TextStoragePosition
 
 MCB_CONFIG_FILE = "mcb.config.js"
 
@@ -111,6 +111,10 @@ def build_mcb(ctx: Context, pyriscv_config: PyriscvConfig):
 
             standalone_instructions += extract_inst_funct(inst_def)
 
+    # dump it for stage 2
+    with open(build_dir / "standalone_instructions.json", "w") as f:
+        f.write(json.dumps(standalone_instructions))
+
     with open(
         build_dir / "src" / (pyriscv_config.instruction_namespace + ".mcb"), "w"
     ) as f:
@@ -121,7 +125,11 @@ def build_mcb(ctx: Context, pyriscv_config: PyriscvConfig):
         for inst in standalone_instructions:
             if not inst["name"] in pyriscv_config.instruction_function_expand:
                 raise ValueError(f"Invalid instruction {inst["name"]}")
-            if not pyriscv_config.instruction_function_expand[inst["name"]]:
+            if (
+                (not pyriscv_config.instruction_function_expand[inst["name"]])
+                or pyriscv_config.text_storage_position
+                == TextStoragePosition.MINECRAFT_STORAGE
+            ):
                 f.write(f"function {inst["name"]} {{{inst["code"]}}}\n")
 
     # Copy debug sources
@@ -134,6 +142,14 @@ def build_mcb(ctx: Context, pyriscv_config: PyriscvConfig):
 
     config_content = config_content.replace(
         "<% PLACEHOLDER_INSTRUCTION_NAMESPACE %>", pyriscv_config.instruction_namespace
+    )
+    config_content = config_content.replace(
+        "<% PLACEHOLDER_INSTRUCTION_FUNCTION_NAMESPACE %>",
+        pyriscv_config.instruction_function_namespace,
+    )
+    config_content = config_content.replace(
+        "<% PLACEHOLDER_TEXT_STORAGE_POSITION %>",
+        pyriscv_config.text_storage_position.name,
     )
 
     with open(build_dir / MCB_CONFIG_FILE, "w") as f:

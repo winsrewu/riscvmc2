@@ -6,4 +6,6 @@ module.exports = {
   ioThreadCount: 1, // default: 1, the number of threads to use for IO operations, 1 is syncronous.
   setup: null, // default: null, a function that will be called to allow binding to mcb events.
   instructionNamespace: "<% PLACEHOLDER_INSTRUCTION_NAMESPACE %>", // the namespace for generated instructions. controlled by build script. do not modify.
+  instructionFunctionNamespace: "<% PLACEHOLDER_INSTRUCTION_FUNCTION_NAMESPACE %>", // the function name space for generated instructions. controlled by build script. do not modify.
+  textStoragePosition: "<% PLACEHOLDER_TEXT_STORAGE_POSITION %>", // the text storage position for generated instructions. controlled by build script. do not modify.
 };

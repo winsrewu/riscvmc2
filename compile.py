@@ -1,6 +1,6 @@
 from beet import Context
 
-from src.python.config import PyriscvConfig
+from src.python.config import PyriscvConfig, TextStoragePosition
 from plugin.stage_1 import build_mcb
 from plugin.auto_dollor import auto_dollor
 from plugin.stage_2 import load_memory_file
@@ -8,6 +8,11 @@ from plugin.stage_2 import load_memory_file
 
 def main(ctx: Context):
     config = PyriscvConfig()
+    config.stage_2_cache = False
+    config.text_storage_position = TextStoragePosition.MINECRAFT_FUNCTION
+    config.set_expand_instruction_function(
+        ["add", "addi", "sub", "lui", "auipc", "jal"]
+    )
 
     build_mcb(ctx, config)
     print("Stage 1 Done.")

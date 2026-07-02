@@ -23,7 +23,29 @@ This project has no need to versioning at the moment.
 
 ## Quick Start
 
-*Working On It*
+Download https://storage.jawbts.org/datapack/eliza%40riscvmc2.zip,
+put it into your datapack folder. Recommanded Minecraft version: 1.21.5.
+
+Then, enable the datapack.
+Please notice that there's a limit in Minecraft of commands per tick.
+You can set it via ``/gamerule maxCommandChainLength <>``.
+
+To summon the terminal, do
+``
+/summon minecraft:text_display ~ ~ ~ {Tags:["riscvmc2_terminal"], alignment:"left", line_width:400}
+``.
+
+To print the keyboard to a player,
+do ``/function org_jawbts_riscvmc2_terminal:print_keyboard``
+as the player.
+
+To reload, do ``/reload``
+or ``/function org_jawbts_riscvmc2_main:reload``.
+
+To run the datapack,
+do ``/scoreboard players set #running org_jawbts_riscvmc2 1`` once and
+do ``/function org_jawbts_riscvmc2_main:tick1000`` multiple times
+(a repeating command block is suggested).
 
 ## Not Quick Start
 
@@ -46,26 +68,6 @@ You can let beet zip the output and send it to Windows.
 
 For some program which requires a super long boot up, loading form snapshots (or I call it dumps) is recommanded.
 Check the dump system call in https://github.com/winsrewu/pyriscv. You need to spilt the output dump file into two and then check ``plugin/loader.py``.
-
-To summon the terminal, do
-``
-/summon minecraft:text_display ~ ~ ~ {Tags:["riscvmc2_terminal"], alignment:"left", line_width:400}
-``.
-
-To print the keyboard to a player, do
-``
-/function org_jawbts_riscvmc2_terminal:print_keyboard
-``
-as the player.
-
-To reload, do
-``
-/reload
-``
-or
-``
-/function org_jawbts_riscvmc2_main:reload
-``
 
 ## Techincal Details
 

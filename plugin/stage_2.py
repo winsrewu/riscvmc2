@@ -82,6 +82,7 @@ def load_memory_file(
         and config.stage_2_cache
     ):
         # uses cache
+        print("Using stage 2 cache.")
         ctx.data.load(datapack_build_dir)
         ctx.data.load(instruction_mcbuild_functions_dir)
         return

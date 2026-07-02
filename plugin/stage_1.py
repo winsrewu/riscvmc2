@@ -132,7 +132,9 @@ def build_mcb(ctx: Context, pyriscv_config: PyriscvConfig):
     with open(config, "r") as f:
         config_content = f.read()
 
-    config_content = config_content.replace("<% PLACEHOLDER_INSTRUCTION_NAMESPACE %>", pyriscv_config.instruction_namespace)
+    config_content = config_content.replace(
+        "<% PLACEHOLDER_INSTRUCTION_NAMESPACE %>", pyriscv_config.instruction_namespace
+    )
 
     with open(build_dir / MCB_CONFIG_FILE, "w") as f:
         f.write(config_content)
@@ -149,7 +151,6 @@ def build_mcb(ctx: Context, pyriscv_config: PyriscvConfig):
             command,
             cwd=build_dir,
             check=True,
-            shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,

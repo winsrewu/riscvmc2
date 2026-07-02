@@ -44,9 +44,19 @@ It is suggested to use Linux or wsl (project on vhdx) to build,
 since they have better performance on small file operations.
 You can let beet zip the output and send it to Windows.
 
-
 For some program which requires a super long boot up, loading form snapshots (or I call it dumps) is recommanded.
 Check the dump system call in https://github.com/winsrewu/pyriscv. You need to spilt the output dump file into two and then check ``plugin/loader.py``.
+
+To summon the terminal, do
+``
+/summon minecraft:text_display ~ ~ ~ {Tags:["riscvmc2_terminal"], alignment:"left"}
+``.
+
+To print the keyboard to a player, do
+``
+/function org_jawbts_riscvmc2_terminal:print_keyboard
+``
+as the player.
 
 ## Techincal Details
 

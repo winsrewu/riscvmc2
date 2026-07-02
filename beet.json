@@ -5,10 +5,12 @@
     "require": [],
     "data_pack": {
         "load": [],
-        "pack_format": 61
+        "pack_format": 61,
+        "zipped": true,
+        "compression_level": 0
     },
     "pipeline": [
         "compile.main"
     ],
-    "output": "D:/Mc/.minecraft/versions/1.21.5-axiom/saves/riscvmc2/datapacks"
+    "output": "/mnt/d/Mc/.minecraft/versions/1.21.5-axiom/saves/riscvmc2/datapacks"
 }

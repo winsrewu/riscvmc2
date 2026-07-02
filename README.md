@@ -42,11 +42,8 @@ Check ``compile.py`` for details and ``beet.json`` to change the destination.
 
 It is suggested to use Linux or wsl (project on vhdx) to build,
 since they have better performance on small file operations.
-You can create a link to let your Minecraft access the datapack from windows.
+You can let beet zip the output and send it to Windows.
 
-```powershell
-New-Item -ItemType SymbolicLink -Path "D:/Mc/.minecraft/versions/1.21.5-axiom/saves/riscvmc2/datapacks/riscvmc2_0.0.1_data_pack" -Target "\\wsl.localhost\Ubuntu\home\...\riscvmc2\output\riscvmc2_0.0.1_data_pack"
-```
 
 For some program which requires a super long boot up, loading form snapshots (or I call it dumps) is recommanded.
 Check the dump system call in https://github.com/winsrewu/pyriscv. You need to spilt the output dump file into two and then check ``plugin/loader.py``.

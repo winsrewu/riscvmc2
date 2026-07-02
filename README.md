@@ -67,7 +67,7 @@ since they have better performance on small file operations.
 You can let beet zip the output and send it to Windows.
 
 For some program which requires a super long boot up, loading form snapshots (or I call it dumps) is recommanded.
-Check the dump system call in https://github.com/winsrewu/pyriscv. You need to spilt the output dump file into two and then check ``plugin/loader.py``.
+Check the dump system call in https://github.com/winsrewu/pyriscv. You need to spilt the output dump file into two and then check ``plugin/stage_1.py`` and ``plugin/stage_2.py``.
 
 ## Techincal Details
 

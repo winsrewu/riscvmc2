@@ -76,7 +76,11 @@ Check the dump system call in https://github.com/winsrewu/pyriscv. You need to s
 #### Reference Module and Tests
 
 This project has a reference model, https://github.com/winsrewu/pyriscv,
-a python emulator. We have tests there, and tests here.
+a python emulator.
+We have self-check tests from there.
+
+``test/pc_log_to_mcf.py`` can be used to check whether they have the
+same behavior (pc and all registers).
 
 Unfortuately RISC-V's official test kit doesn't like U-mode only emulators.
 So we have our own.

@@ -1,4 +1,4 @@
-function onload minecraft:load {
+function onload org_jawbts_riscvmc2:load {
 	scoreboard objectives add org_jawbts_riscvmc2_memory_temp dummy
 	scoreboard objectives add org_jawbts_riscvmc2_memory dummy
 }

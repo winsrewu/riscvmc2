@@ -1,6 +1,6 @@
 import ./org_jawbts_riscvmc2_bitwise_ops_t.mcbt
 
-function onload minecraft:load {
+function onload org_jawbts_riscvmc2:load {
 	scoreboard objectives add org_jawbts_riscvmc2_bitwise_ops_consts dummy
 	scoreboard objectives add org_jawbts_riscvmc2_bitwise_ops_temp dummy
 

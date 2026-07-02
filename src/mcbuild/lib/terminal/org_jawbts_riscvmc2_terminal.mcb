@@ -1,6 +1,6 @@
 import ./org_jawbts_riscvmc2_ascii_js.js
 
-function load minecraft:load {
+function load org_jawbts_riscvmc2:load {
 	scoreboard objectives add org_jawbts_riscvmc2_terminal_keyboard_trigger trigger
 
     data modify storage org_jawbts_riscvmc2_terminal:temp buffer.in set value ""

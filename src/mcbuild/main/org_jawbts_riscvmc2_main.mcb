@@ -51,7 +51,11 @@
 # #running: whether the cpu is running
 # #read_block: whether read ecall is blocking the process
 
-function onload minecraft:load {
+function _onload minecraft:load {
+	function #org_jawbts_riscvmc2:load
+}
+
+function onload org_jawbts_riscvmc2:load {
 	scoreboard objectives add org_jawbts_riscvmc2_register dummy
 	scoreboard objectives add org_jawbts_riscvmc2 dummy
 	scoreboard objectives add org_jawbts_riscvmc2_temp dummy
@@ -137,4 +141,18 @@ function debug_tick {
 	} else execute unless score #running org_jawbts_riscvmc2 matches 0 unless score #ecall_block org_jawbts_riscvmc2 matches 0 run {
 		function org_jawbts_riscvmc2_rv32i:ecall
 	}
+}
+
+function reload {
+	function #org_jawbts_riscvmc2:load
+
+	scoreboard players set #running org_jawbts_riscvmc2 0
+	scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+
+	data modify storage org_jawbts_riscvmc2_temp:main inst set value {}
+	scoreboard objectives remove org_jawbts_riscvmc2_memory
+	scoreboard objectives add org_jawbts_riscvmc2_memory dummy
+	scoreboard players set #pc org_jawbts_riscvmc2_register 0
+
+	function org_jawbts_riscvmc2_loader:all
 }

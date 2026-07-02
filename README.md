@@ -58,6 +58,15 @@ To print the keyboard to a player, do
 ``
 as the player.
 
+To reload, do
+``
+/reload
+``
+or
+``
+/function org_jawbts_riscvmc2_main:reload
+``
+
 ## Techincal Details
 
 ### Project Structure
@@ -127,7 +136,7 @@ This project uses Black Formatter for python code.
 - [ ] ``Execute`` magic based faster bitwise operations & module management
 - [ ] Native Minecraft command / function calls based on custom instruction (Something like ``ecall``)
 - [ ] Performance
-- [ ] Reload without ``/reload`` command
+- [x] Reload without ``/reload`` command
 
 ## NOT TODO
 

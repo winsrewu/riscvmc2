@@ -38,6 +38,15 @@ class PyriscvFunct3Op(OptionalValueEnum):
     OR = 0b110
     AND = 0b111
 
+class PyriscvFunct3OpMul(OptionalValueEnum):
+    MUL = 0b000
+    MULH = 0b001
+    MULHU = 0b011
+    MULHSU = 0b010
+    DIV = 0b100
+    DIVU = 0b101
+    REM = 0b110
+    REMU = 0b111
 
 class PyriscvFunct3Branch(OptionalValueEnum):
     BEQ = 0b000
@@ -96,6 +105,17 @@ INSTRUCTION_LIST = {
         "sh",
         "sb",
         "should_not_call",
+        "should_bypass",
         "ecall",
-    ]
+    ],
+    "M": [
+        "mul",
+        "mulh",
+        "mulhu",
+        "mulhsu",
+        "div",
+        "divu",
+        "rem",
+        "remu",
+    ],
 }

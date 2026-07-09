@@ -84,32 +84,50 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
 
     if decoded_inst.opcode == PyriscvOpCode.OP:
         name = None
-        if decoded_inst.funct3op == PyriscvFunct3Op.ADD_SUB:
-            if int(decoded_inst.funct7) == 0x00:
-                name = "add"
-            elif int(decoded_inst.funct7) == 0x20:
-                name = "sub"
-            else:
-                raise ValueError("Invalid funct7 for add/sub")
-        if decoded_inst.funct3op == PyriscvFunct3Op.AND:
-            name = "and"
-        if decoded_inst.funct3op == PyriscvFunct3Op.OR:
-            name = "or"
-        if decoded_inst.funct3op == PyriscvFunct3Op.XOR:
-            name = "xor"
-        if decoded_inst.funct3op == PyriscvFunct3Op.SLL:
-            name = "sll"
-        if decoded_inst.funct3op == PyriscvFunct3Op.SRL_SRA:
-            if int(decoded_inst.funct7) == 0x00:
-                name = "srl"
-            elif int(decoded_inst.funct7) == 0x20:
-                name = "sra"
-            else:
-                raise ValueError("Invalid funct7 for srl/sra")
-        if decoded_inst.funct3op == PyriscvFunct3Op.SLT:
-            name = "slt"
-        if decoded_inst.funct3op == PyriscvFunct3Op.SLTU:
-            name = "sltu"
+        if int(decoded_inst.funct7) == 0x01:
+            if decoded_inst.funct3opmul == PyriscvFunct3OpMul.MUL:
+                name = "mul"
+            if decoded_inst.funct3opmul == PyriscvFunct3OpMul.MULH:
+                name = "mulh"
+            if decoded_inst.funct3opmul == PyriscvFunct3OpMul.MULHU:
+                name = "mulhu"
+            if decoded_inst.funct3opmul == PyriscvFunct3OpMul.MULHSU:
+                name = "mulhsu"
+            if decoded_inst.funct3opmul == PyriscvFunct3OpMul.DIV:
+                name = "div"
+            if decoded_inst.funct3opmul == PyriscvFunct3OpMul.DIVU:
+                name = "divu"
+            if decoded_inst.funct3opmul == PyriscvFunct3OpMul.REM:
+                name = "rem"
+            if decoded_inst.funct3opmul == PyriscvFunct3OpMul.REMU:
+                name = "remu"
+        else:
+            if decoded_inst.funct3op == PyriscvFunct3Op.ADD_SUB:
+                if int(decoded_inst.funct7) == 0x00:
+                    name = "add"
+                elif int(decoded_inst.funct7) == 0x20:
+                    name = "sub"
+                else:
+                    raise ValueError("Invalid funct7 for add/sub")
+            if decoded_inst.funct3op == PyriscvFunct3Op.AND:
+                name = "and"
+            if decoded_inst.funct3op == PyriscvFunct3Op.OR:
+                name = "or"
+            if decoded_inst.funct3op == PyriscvFunct3Op.XOR:
+                name = "xor"
+            if decoded_inst.funct3op == PyriscvFunct3Op.SLL:
+                name = "sll"
+            if decoded_inst.funct3op == PyriscvFunct3Op.SRL_SRA:
+                if int(decoded_inst.funct7) == 0x00:
+                    name = "srl"
+                elif int(decoded_inst.funct7) == 0x20:
+                    name = "sra"
+                else:
+                    raise ValueError("Invalid funct7 for srl/sra")
+            if decoded_inst.funct3op == PyriscvFunct3Op.SLT:
+                name = "slt"
+            if decoded_inst.funct3op == PyriscvFunct3Op.SLTU:
+                name = "sltu"
         if name is None:
             raise ValueError("Invalid op_imm funct3")
 
@@ -176,6 +194,10 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
     # But we doesn't support it.
     if Operand(decoded_inst.raw_instruction).unsigned() == 0xC2202573:  # csrrs a0, zero
         return "should_not_call", {}
+    
+    # Another stuff found in _start, mysterious hardcoded instruction
+    if Operand(decoded_inst.raw_instruction).unsigned() == 0x1751073: # csrw jvt, a0
+        return "should_bypass", {}
 
     raise ValueError("Invalid instruction")
 

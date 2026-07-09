@@ -13,6 +13,7 @@ def append_auto_dollar(function: Function):
 def auto_dollor(ctx: Context, config: PyriscvConfig):
     ACCEPTED_INJECT_PREFIXS = [
         "org_jawbts_riscvmc2_rv32i",
+        "org_jawbts_riscvmc2_rv32m",
         "org_jawbts_riscvmc2_memory",
         "org_jawbts_riscvmc2_test",
     ]

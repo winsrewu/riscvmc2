@@ -1,0 +1,50 @@
+import ./org_jawbts_riscvmc2_rv32m_t.mcbt
+
+function onload org_jawbts_riscvmc2:load {
+    scoreboard objectives add org_jawbts_riscvmc2_rv32m_temp dummy
+    scoreboard objectives add org_jawbts_riscvmc2_rv32m_consts dummy
+
+    scoreboard players set #min_int org_jawbts_riscvmc2_rv32m_consts -2147483648
+    scoreboard players set #base org_jawbts_riscvmc2_rv32m_consts 65536
+    scoreboard players set #one org_jawbts_riscvmc2_rv32m_consts 1
+}
+
+# The comment below is to help the project locate the instruction definitions.
+# Do not remove.
+
+# #BEGIN INST DEF
+function i_mul {
+    template i_mul $(rs1) $(rs2) $(rd)
+}
+
+function i_mulh {
+    template i_mulh $(rs1) $(rs2) $(rd)
+}
+
+function i_mulhu {
+    template i_mulhu $(rs1) $(rs2) $(rd)
+}
+
+function i_mulhsu {
+    template i_mulhsu $(rs1) $(rs2) $(rd)
+}
+
+function i_div {
+    template i_div $(rs1) $(rs2) $(rd)
+}
+
+function i_divu {
+    template i_divu $(rs1) $(rs2) $(rd)
+}
+
+function i_rem {
+    template i_rem $(rs1) $(rs2) $(rd)
+}
+
+function i_remu {
+    template i_remu $(rs1) $(rs2) $(rd)
+}
+# #END INST DEF
+
+# The comment above is to help the project locate the instruction definitions.
+# Do not remove.

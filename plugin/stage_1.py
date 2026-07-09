@@ -8,6 +8,9 @@ from beet import Context
 from src.python.config import PyriscvConfig, TextStoragePosition
 
 MCB_CONFIG_FILE = "mcb.config.js"
+INSTRUCTION_STANDALONE_MCB_IMPORT = "import ./org_jawbts_riscvmc2_rv32i_t.mcbt\n" \
+                                    "import ./org_jawbts_riscvmc2_rv32m_t.mcbt\n" \
+                                    "import ./org_jawbts_riscvmc2_memory_t.mcbt\n"
 
 
 def extract_inst_def_area(content: str):
@@ -119,7 +122,7 @@ def build_mcb(ctx: Context, pyriscv_config: PyriscvConfig):
         build_dir / "src" / (pyriscv_config.instruction_namespace + ".mcb"), "w"
     ) as f:
         f.write(
-            "import ./org_jawbts_riscvmc2_rv32i_t.mcbt\nimport ./org_jawbts_riscvmc2_memory_t.mcbt\n"
+            INSTRUCTION_STANDALONE_MCB_IMPORT
         )
 
         for inst in standalone_instructions:

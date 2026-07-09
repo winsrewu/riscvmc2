@@ -7,6 +7,7 @@ class PyriscvDecodedInstruction:
     codeclass: PyriscvCodeClass | None
     opcode: PyriscvOpCode | None
     funct3op: PyriscvFunct3Op | None
+    funct3opmul: PyriscvFunct3OpMul | None
     funct3branch: PyriscvFunct3Branch | None
     funct3loadstore: PyriscvFunct3LoadStore | None
     funct7: Operand
@@ -24,6 +25,7 @@ class PyriscvDecodedInstruction:
         self.codeclass = PyriscvCodeClass.from_value(raw_instruction[1:0])
         self.opcode = PyriscvOpCode.from_value(raw_instruction[6:2])
         self.funct3op = PyriscvFunct3Op.from_value(raw_instruction[14:12])
+        self.funct3opmul = PyriscvFunct3OpMul.from_value(raw_instruction[14:12])
         self.funct3branch = PyriscvFunct3Branch.from_value(raw_instruction[14:12])
         self.funct3loadstore = PyriscvFunct3LoadStore.from_value(raw_instruction[14:12])
         self.funct7 = Operand(raw_instruction[31:25], 7)

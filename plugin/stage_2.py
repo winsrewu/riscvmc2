@@ -7,7 +7,7 @@ import subprocess
 
 from beet import Context
 
-from plugin.stage_1 import MCB_CONFIG_FILE
+from plugin.stage_1 import MCB_CONFIG_FILE, INSTRUCTION_STANDALONE_MCB_IMPORT
 from src.python.memory import *
 from src.python.encoder import encode_to_scoreboard, encode_to_function
 from src.python.decoder import PyriscvDecodedInstruction
@@ -171,7 +171,7 @@ def load_memory_file(
             "w",
         ) as f:
             f.write(
-                "import ./org_jawbts_riscvmc2_rv32i_t.mcbt\nimport ./org_jawbts_riscvmc2_memory_t.mcbt\n"
+                INSTRUCTION_STANDALONE_MCB_IMPORT
             )
 
             for inst, addr in process_memory_into_raw_inst(mem):

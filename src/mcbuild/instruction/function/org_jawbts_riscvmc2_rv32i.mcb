@@ -187,6 +187,10 @@ function i_should_not_call {
 	say Error: 'Should Not Call' Function is called
 }
 
+function i_should_bypass {
+	
+}
+
 function i_ecall {
 	scoreboard players set #ecall_block org_jawbts_riscvmc2 1
 	template _pc_add 4

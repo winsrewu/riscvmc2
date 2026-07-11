@@ -42,6 +42,8 @@ as the player.
 To reload, do ``/reload``
 or ``/function org_jawbts_riscvmc2_main:reload``.
 
+To load the datapack, do ``/function org_jawbts_riscvmc2_main:reload``
+
 To run the datapack,
 do ``/scoreboard players set #running org_jawbts_riscvmc2 1`` once and
 do ``/function org_jawbts_riscvmc2_main:tick1000`` multiple times

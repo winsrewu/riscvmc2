@@ -11,6 +11,8 @@ So I think versions around it or upper ones can work too.
 
 About **69** commands per instruction.
 
+About 20 KIPS (20k instructions per second), almost as fast as 1960s CPUs.
+
 ## Similar Repositories
 - https://github.com/winsrewu/riscvmc Generation #1 Emulator. Super Slow.
 - https://github.com/SuperTails/riscvcraft Another emulator but with rv32ima. This author also have llvm / wasm support for mc datapack.

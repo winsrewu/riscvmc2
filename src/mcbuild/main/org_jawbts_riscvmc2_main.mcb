@@ -82,6 +82,16 @@ function tick1000 {
 	}
 }
 
+function tick1000_execute_magic {
+	REPEAT (1, 4) {
+		function *tick250_execute_magic
+	}
+}
+
+function tick250_execute_magic {
+	execute rotated 0 0 rotated as @e[limit=250] run function *tick
+}
+
 function tick {
 	execute unless score #running org_jawbts_riscvmc2 matches 0 if score #ecall_block org_jawbts_riscvmc2 matches 0 run {
 		execute store result storage org_jawbts_riscvmc2_temp:main inst_temp.pc int 1 run scoreboard players get #pc org_jawbts_riscvmc2_register

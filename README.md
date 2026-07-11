@@ -136,7 +136,7 @@ This project uses Black Formatter for python code.
 
 ## TODO
 
-- [ ] ``Execute`` based fast iterations
+- [x] ``Execute`` based fast iterations
 - [x] M extension
 - [ ] Linux in Minecraft
 - [ ] ``Execute`` magic based faster bitwise operations & module management

@@ -68,7 +68,12 @@ def _encode_to_function(decoded_inst: PyriscvDecodedInstruction) -> tuple[str, d
         if decoded_inst.funct3op == PyriscvFunct3Op.SLL:
             name = "slli"
         if decoded_inst.funct3op == PyriscvFunct3Op.SRL_SRA:
-            name = "srli"
+            if int(decoded_inst.funct7) == 0x00:
+                name = "srli"
+            elif int(decoded_inst.funct7) == 0x20:
+                name = "srai"
+            else:
+                raise ValueError("Invalid funct7 for srli/srai")
         if decoded_inst.funct3op == PyriscvFunct3Op.SLT:
             name = "slti"
         if decoded_inst.funct3op == PyriscvFunct3Op.SLTU:

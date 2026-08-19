@@ -3,7 +3,7 @@
 - Download the save from https://storage.jawbts.org/minecraft-save/minecraft-1960.7z.
 - Load it in 1.21.5.
 - ``/tp 101 155 134``.
-- Hit ``reload`` then ``set running`` button, leave ``run 1000`` level active.
+- Hit ``reload`` then ``set running`` button, leave ``run 1000`` lever active.
 - Enjoy!
 
 # riscvmc2

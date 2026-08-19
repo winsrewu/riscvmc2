@@ -1,3 +1,11 @@
+# Minecraft-1960 Guide
+
+- Download the save from https://storage.jawbts.org/minecraft-save/minecraft-1960.7z.
+- Load it in 1.21.5.
+- ``/tp 101 155 134``.
+- Hit ``reload`` then ``set running`` button, leave ``run 1000`` level active.
+- Enjoy!
+
 # riscvmc2
 
 A tool to compile RISC-V instructions to Minecraft commands.

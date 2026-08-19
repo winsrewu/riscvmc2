@@ -1,0 +1,24 @@
+# Screen-library helpers.  Parameters are <player>@<scoreboard>.
+
+# Cheap unsigned byte read for the world renderer.  The generic load_byte
+# template costs ~400 commands (its `and` helper unrolls 31 iterations), which
+# blows the command-chain budget when read ~2000 times per frame.  World tiles
+# are 0..27, so the packed 32-bit word is always non-negative and the byte can
+# be extracted with plain /= and %= instead of bitwise templates.
+template load_world_byte {
+    with addr:word dest:word {
+        scoreboard players operation #lwb_off org_jawbts_riscvmc2_temp = <% addr.replace("@", " ") %>
+        scoreboard players operation #lwb_off org_jawbts_riscvmc2_temp %= #c4 org_jawbts_riscvmc2_temp
+        scoreboard players operation #lwb_wa org_jawbts_riscvmc2_temp = <% addr.replace("@", " ") %>
+        scoreboard players operation #lwb_wa org_jawbts_riscvmc2_temp -= #lwb_off org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:main memory.addr int 1 run scoreboard players get #lwb_wa org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:main memory
+            scoreboard players operation #lwb_byte org_jawbts_riscvmc2_temp = #$(addr) org_jawbts_riscvmc2_memory
+        }
+        execute if score #lwb_off org_jawbts_riscvmc2_temp matches 1.. run scoreboard players operation #lwb_byte org_jawbts_riscvmc2_temp /= #c256 org_jawbts_riscvmc2_temp
+        execute if score #lwb_off org_jawbts_riscvmc2_temp matches 2.. run scoreboard players operation #lwb_byte org_jawbts_riscvmc2_temp /= #c256 org_jawbts_riscvmc2_temp
+        execute if score #lwb_off org_jawbts_riscvmc2_temp matches 3.. run scoreboard players operation #lwb_byte org_jawbts_riscvmc2_temp /= #c256 org_jawbts_riscvmc2_temp
+        scoreboard players operation #lwb_byte org_jawbts_riscvmc2_temp %= #c256 org_jawbts_riscvmc2_temp
+        scoreboard players operation <% dest.replace("@", " ") %> = #lwb_byte org_jawbts_riscvmc2_temp
+    }
+}

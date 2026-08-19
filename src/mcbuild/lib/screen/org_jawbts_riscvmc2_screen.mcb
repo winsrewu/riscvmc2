@@ -1,0 +1,759 @@
+import ./org_jawbts_riscvmc2_screen_js.js
+import ./org_jawbts_riscvmc2_screen_t.mcbt
+import ./org_jawbts_riscvmc2_memory_t.mcbt
+
+# Screen library for riscvmc2.
+#
+# The display is a 192x168 wall of concrete at a fixed position
+# (x = 0..191, y = 64..231).  Drawing goes to a hidden back buffer at z=-1;
+# "present" clones it to the visible front wall at z=0 at the end of each
+# frame (double buffering, so the player never sees a half-drawn frame).
+# Game pixel (gx, gy) with gy=0 at the TOP maps to minecraft (gx, 231 - gy).
+# "set" places white concrete, "clear" blanks the back buffer to black.
+#
+# Input is scoreboard flags on org_jawbts_riscvmc2_key:
+#   #k_<code>  = key held down      (set/cleared by a command block)
+#   #e_<code>  = key pressed edge   (set by a command block, cleared here
+#                                     by display_sync AFTER the game reads it)
+# K_* codes match app/minecraft-1960-c/mc.h (0..29).
+
+function load org_jawbts_riscvmc2:load {
+    scoreboard objectives add org_jawbts_riscvmc2_key dummy
+    data modify storage org_jawbts_riscvmc2_temp:screen pos set value {}
+    scoreboard players set #game_ms org_jawbts_riscvmc2_temp 0
+
+    # small integer constants used by the drawing primitives
+    scoreboard players set #c2 org_jawbts_riscvmc2_temp 2
+    scoreboard players set #c4 org_jawbts_riscvmc2_temp 4
+    scoreboard players set #c8 org_jawbts_riscvmc2_temp 8
+    scoreboard players set #c10 org_jawbts_riscvmc2_temp 10
+    scoreboard players set #c256 org_jawbts_riscvmc2_temp 256
+}
+
+# 50ms per minecraft tick, quantised for the game's display_ms()
+function tick minecraft:tick {
+    scoreboard players add #game_ms org_jawbts_riscvmc2_temp 50
+}
+
+# ---- screen primitives ---------------------------------------------
+
+function clear {
+    fill 0 64 -1 191 231 -1 minecraft:black_concrete
+}
+
+# copy the back buffer (z=-1) to the front wall (z=0) at the end of a frame
+function present {
+    clone 0 64 -1 191 231 -1 0 64 0
+}
+
+function set {
+    execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #10 org_jawbts_riscvmc2_register
+    scoreboard players set #scr_fy org_jawbts_riscvmc2_temp 231
+    scoreboard players operation #scr_fy org_jawbts_riscvmc2_temp -= #11 org_jawbts_riscvmc2_register
+    execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #scr_fy org_jawbts_riscvmc2_temp
+    block { with storage org_jawbts_riscvmc2_temp:screen pos
+        $setblock $(x) $(fy) -1 minecraft:white_concrete
+    }
+}
+
+function hline {
+    # a0=x0 a1=x1 a2=y
+    scoreboard players operation #h_x0 org_jawbts_riscvmc2_temp = #10 org_jawbts_riscvmc2_register
+    scoreboard players operation #h_x1 org_jawbts_riscvmc2_temp = #11 org_jawbts_riscvmc2_register
+    execute if score #h_x0 org_jawbts_riscvmc2_temp matches ..-1 run scoreboard players set #h_x0 org_jawbts_riscvmc2_temp 0
+    execute if score #h_x1 org_jawbts_riscvmc2_temp matches ..-1 run scoreboard players set #h_x1 org_jawbts_riscvmc2_temp 0
+    execute if score #h_x0 org_jawbts_riscvmc2_temp matches 192.. run scoreboard players set #h_x0 org_jawbts_riscvmc2_temp 191
+    execute if score #h_x1 org_jawbts_riscvmc2_temp matches 192.. run scoreboard players set #h_x1 org_jawbts_riscvmc2_temp 191
+    scoreboard players set #h_fy org_jawbts_riscvmc2_temp 231
+    scoreboard players operation #h_fy org_jawbts_riscvmc2_temp -= #12 org_jawbts_riscvmc2_register
+    execute if score #h_fy org_jawbts_riscvmc2_temp matches ..63 run scoreboard players set #h_fy org_jawbts_riscvmc2_temp 64
+    execute if score #h_fy org_jawbts_riscvmc2_temp matches 232.. run scoreboard players set #h_fy org_jawbts_riscvmc2_temp 231
+    execute if score #h_x0 org_jawbts_riscvmc2_temp <= #h_x1 org_jawbts_riscvmc2_temp run {
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #h_x0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x1 int 1 run scoreboard players get #h_x1 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #h_fy org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x1) $(fy) -1 minecraft:white_concrete
+        }
+    }
+}
+
+function vline {
+    # a0=x a1=y0 a2=y1
+    scoreboard players operation #v_x org_jawbts_riscvmc2_temp = #10 org_jawbts_riscvmc2_register
+    scoreboard players set #v_fy0 org_jawbts_riscvmc2_temp 231
+    scoreboard players operation #v_fy0 org_jawbts_riscvmc2_temp -= #11 org_jawbts_riscvmc2_register
+    scoreboard players set #v_fy1 org_jawbts_riscvmc2_temp 231
+    scoreboard players operation #v_fy1 org_jawbts_riscvmc2_temp -= #12 org_jawbts_riscvmc2_register
+    execute if score #v_x org_jawbts_riscvmc2_temp matches ..-1 run scoreboard players set #v_x org_jawbts_riscvmc2_temp 0
+    execute if score #v_x org_jawbts_riscvmc2_temp matches 192.. run scoreboard players set #v_x org_jawbts_riscvmc2_temp 191
+    execute if score #v_fy1 org_jawbts_riscvmc2_temp <= #v_fy0 org_jawbts_riscvmc2_temp run {
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #v_x org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #v_fy1 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy1 int 1 run scoreboard players get #v_fy0 org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x) $(fy1) -1 minecraft:white_concrete
+        }
+    }
+}
+
+function rect {
+    # a0=x a1=y a2=w a3=h
+    scoreboard players operation #r_x0 org_jawbts_riscvmc2_temp = #10 org_jawbts_riscvmc2_register
+    scoreboard players operation #r_x1 org_jawbts_riscvmc2_temp = #10 org_jawbts_riscvmc2_register
+    scoreboard players operation #r_x1 org_jawbts_riscvmc2_temp += #12 org_jawbts_riscvmc2_register
+    scoreboard players remove #r_x1 org_jawbts_riscvmc2_temp 1
+    scoreboard players operation #r_y0 org_jawbts_riscvmc2_temp = #11 org_jawbts_riscvmc2_register
+    scoreboard players operation #r_y1 org_jawbts_riscvmc2_temp = #11 org_jawbts_riscvmc2_register
+    scoreboard players operation #r_y1 org_jawbts_riscvmc2_temp += #13 org_jawbts_riscvmc2_register
+    scoreboard players remove #r_y1 org_jawbts_riscvmc2_temp 1
+    execute if score #r_x0 org_jawbts_riscvmc2_temp <= #r_x1 org_jawbts_riscvmc2_temp if score #r_y0 org_jawbts_riscvmc2_temp <= #r_y1 org_jawbts_riscvmc2_temp run {
+        # top + bottom edges
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #r_x0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x1 int 1 run scoreboard players get #r_x1 org_jawbts_riscvmc2_temp
+        scoreboard players set #r_fy org_jawbts_riscvmc2_temp 231
+        scoreboard players operation #r_fy org_jawbts_riscvmc2_temp -= #r_y0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #r_fy org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x1) $(fy) -1 minecraft:white_concrete
+        }
+        scoreboard players set #r_fy org_jawbts_riscvmc2_temp 231
+        scoreboard players operation #r_fy org_jawbts_riscvmc2_temp -= #r_y1 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #r_fy org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x1) $(fy) -1 minecraft:white_concrete
+        }
+        # left + right edges
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #r_x0 org_jawbts_riscvmc2_temp
+        scoreboard players set #r_fy0 org_jawbts_riscvmc2_temp 231
+        scoreboard players operation #r_fy0 org_jawbts_riscvmc2_temp -= #r_y1 org_jawbts_riscvmc2_temp
+        scoreboard players set #r_fy1 org_jawbts_riscvmc2_temp 231
+        scoreboard players operation #r_fy1 org_jawbts_riscvmc2_temp -= #r_y0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #r_fy0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy1 int 1 run scoreboard players get #r_fy1 org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x) $(fy1) -1 minecraft:white_concrete
+        }
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #r_x1 org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x) $(fy1) -1 minecraft:white_concrete
+        }
+    }
+}
+
+function fill_rect {
+    # a0=x a1=y a2=w a3=h
+    scoreboard players operation #f_x0 org_jawbts_riscvmc2_temp = #10 org_jawbts_riscvmc2_register
+    scoreboard players operation #f_x1 org_jawbts_riscvmc2_temp = #10 org_jawbts_riscvmc2_register
+    scoreboard players operation #f_x1 org_jawbts_riscvmc2_temp += #12 org_jawbts_riscvmc2_register
+    scoreboard players remove #f_x1 org_jawbts_riscvmc2_temp 1
+    scoreboard players operation #f_y0 org_jawbts_riscvmc2_temp = #11 org_jawbts_riscvmc2_register
+    scoreboard players operation #f_y1 org_jawbts_riscvmc2_temp = #11 org_jawbts_riscvmc2_register
+    scoreboard players operation #f_y1 org_jawbts_riscvmc2_temp += #13 org_jawbts_riscvmc2_register
+    scoreboard players remove #f_y1 org_jawbts_riscvmc2_temp 1
+    execute if score #f_x0 org_jawbts_riscvmc2_temp <= #f_x1 org_jawbts_riscvmc2_temp if score #f_y0 org_jawbts_riscvmc2_temp <= #f_y1 org_jawbts_riscvmc2_temp run {
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #f_x0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x1 int 1 run scoreboard players get #f_x1 org_jawbts_riscvmc2_temp
+        scoreboard players set #f_fy0 org_jawbts_riscvmc2_temp 231
+        scoreboard players operation #f_fy0 org_jawbts_riscvmc2_temp -= #f_y1 org_jawbts_riscvmc2_temp
+        scoreboard players set #f_fy1 org_jawbts_riscvmc2_temp 231
+        scoreboard players operation #f_fy1 org_jawbts_riscvmc2_temp -= #f_y0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #f_fy0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy1 int 1 run scoreboard players get #f_fy1 org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x1) $(fy1) -1 minecraft:white_concrete
+        }
+    }
+}
+
+function heart {
+    # a0=x a1=y a2=mode   (0 = nothing, 1 = half, 2 = full)
+    execute if score #12 org_jawbts_riscvmc2_register matches 1.. run {
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #10 org_jawbts_riscvmc2_register
+        scoreboard players set #scr_fy org_jawbts_riscvmc2_temp 231
+        scoreboard players operation #scr_fy org_jawbts_riscvmc2_temp -= #11 org_jawbts_riscvmc2_register
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #scr_fy org_jawbts_riscvmc2_temp
+        execute if score #12 org_jawbts_riscvmc2_register matches 2 run {
+            block { with storage org_jawbts_riscvmc2_temp:screen pos
+                $execute positioned $(x) $(fy) -1 run setblock ~1 ~0 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~3 ~0 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~0 ~-1 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~1 ~-1 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~2 ~-1 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~3 ~-1 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~4 ~-1 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~0 ~-2 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~1 ~-2 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~2 ~-2 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~3 ~-2 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~4 ~-2 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~1 ~-3 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~2 ~-3 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~3 ~-3 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~2 ~-4 ~0 minecraft:white_concrete
+            }
+        } else run {
+            block { with storage org_jawbts_riscvmc2_temp:screen pos
+                $execute positioned $(x) $(fy) -1 run setblock ~1 ~0 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~0 ~-1 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~1 ~-1 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~2 ~-1 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~0 ~-2 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~1 ~-2 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~2 ~-2 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~1 ~-3 ~0 minecraft:white_concrete
+                $execute positioned $(x) $(fy) -1 run setblock ~2 ~-4 ~0 minecraft:white_concrete
+            }
+        }
+    }
+}
+
+function noop {
+
+}
+
+# ---- text ----------------------------------------------------------
+
+function char {
+    # a0=x a1=y a2=c
+    execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #10 org_jawbts_riscvmc2_register
+    scoreboard players set #scr_fy org_jawbts_riscvmc2_temp 231
+    scoreboard players operation #scr_fy org_jawbts_riscvmc2_temp -= #11 org_jawbts_riscvmc2_register
+    execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #scr_fy org_jawbts_riscvmc2_temp
+
+    scoreboard players set #glyph org_jawbts_riscvmc2_temp 36
+    scoreboard players operation #gc org_jawbts_riscvmc2_temp = #12 org_jawbts_riscvmc2_register
+    execute if score #gc org_jawbts_riscvmc2_temp matches 48..57 run scoreboard players operation #glyph org_jawbts_riscvmc2_temp = #gc org_jawbts_riscvmc2_temp
+    execute if score #gc org_jawbts_riscvmc2_temp matches 48..57 run scoreboard players remove #glyph org_jawbts_riscvmc2_temp 48
+    execute if score #gc org_jawbts_riscvmc2_temp matches 65..90 run scoreboard players operation #glyph org_jawbts_riscvmc2_temp = #gc org_jawbts_riscvmc2_temp
+    execute if score #gc org_jawbts_riscvmc2_temp matches 65..90 run scoreboard players remove #glyph org_jawbts_riscvmc2_temp 55
+    execute if score #gc org_jawbts_riscvmc2_temp matches 97..122 run scoreboard players operation #glyph org_jawbts_riscvmc2_temp = #gc org_jawbts_riscvmc2_temp
+    execute if score #gc org_jawbts_riscvmc2_temp matches 97..122 run scoreboard players remove #glyph org_jawbts_riscvmc2_temp 87
+    execute if score #gc org_jawbts_riscvmc2_temp matches 46 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 37
+    execute if score #gc org_jawbts_riscvmc2_temp matches 58 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 38
+    execute if score #gc org_jawbts_riscvmc2_temp matches 33 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 39
+    execute if score #gc org_jawbts_riscvmc2_temp matches 63 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 40
+    execute if score #gc org_jawbts_riscvmc2_temp matches 45 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 41
+    execute if score #gc org_jawbts_riscvmc2_temp matches 43 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 42
+    execute if score #gc org_jawbts_riscvmc2_temp matches 62 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 43
+    execute if score #gc org_jawbts_riscvmc2_temp matches 60 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 44
+    execute if score #gc org_jawbts_riscvmc2_temp matches 47 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 45
+    execute if score #gc org_jawbts_riscvmc2_temp matches 39 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 46
+    execute if score #gc org_jawbts_riscvmc2_temp matches 44 run scoreboard players set #glyph org_jawbts_riscvmc2_temp 47
+
+    REPEAT (0, 47) as g {
+        execute if score #glyph org_jawbts_riscvmc2_temp matches <%g%> run function org_jawbts_riscvmc2_screen:glyph_<%g%>
+    }
+}
+
+# screen_text: a0=x a1=y a2=ptr (nul-terminated string in guest memory)
+function text {
+    scoreboard players operation #t_ptr org_jawbts_riscvmc2_temp = #12 org_jawbts_riscvmc2_register
+    block {
+        template load_byte #t_ptr@org_jawbts_riscvmc2_temp #t_c@org_jawbts_riscvmc2_temp unsigned
+        execute if score #t_c org_jawbts_riscvmc2_temp matches 1.. run {
+            scoreboard players operation #12 org_jawbts_riscvmc2_register = #t_c org_jawbts_riscvmc2_temp
+            function org_jawbts_riscvmc2_screen:char
+            scoreboard players add #10 org_jawbts_riscvmc2_register 4
+            scoreboard players add #t_ptr org_jawbts_riscvmc2_temp 1
+            function ^1
+        }
+    }
+}
+
+# screen_num: a0=x a1=y a2=v  (render as decimal text via digit glyphs)
+function num {
+    scoreboard players operation #n_v org_jawbts_riscvmc2_temp = #12 org_jawbts_riscvmc2_register
+    execute if score #n_v org_jawbts_riscvmc2_temp matches ..-1 run scoreboard players set #n_v org_jawbts_riscvmc2_temp 0
+    execute if score #n_v org_jawbts_riscvmc2_temp matches 10000.. run scoreboard players set #n_v org_jawbts_riscvmc2_temp 9999
+    scoreboard players set #n_pw org_jawbts_riscvmc2_temp 1000
+    scoreboard players set #n_lead org_jawbts_riscvmc2_temp 0
+    block {
+        execute if score #n_pw org_jawbts_riscvmc2_temp matches 1.. run {
+            # d = v / pw ; v = v % pw
+            scoreboard players operation #n_d org_jawbts_riscvmc2_temp = #n_v org_jawbts_riscvmc2_temp
+            scoreboard players operation #n_d org_jawbts_riscvmc2_temp /= #n_pw org_jawbts_riscvmc2_temp
+            scoreboard players operation #n_t org_jawbts_riscvmc2_temp = #n_d org_jawbts_riscvmc2_temp
+            scoreboard players operation #n_t org_jawbts_riscvmc2_temp *= #n_pw org_jawbts_riscvmc2_temp
+            scoreboard players operation #n_v org_jawbts_riscvmc2_temp -= #n_t org_jawbts_riscvmc2_temp
+            # print the digit when d>0, or after a leading digit, or on the units place
+            scoreboard players set #n_print org_jawbts_riscvmc2_temp 0
+            execute if score #n_d org_jawbts_riscvmc2_temp matches 1.. run scoreboard players set #n_print org_jawbts_riscvmc2_temp 1
+            execute if score #n_lead org_jawbts_riscvmc2_temp matches 1.. run scoreboard players set #n_print org_jawbts_riscvmc2_temp 1
+            execute if score #n_pw org_jawbts_riscvmc2_temp matches 1 run scoreboard players set #n_print org_jawbts_riscvmc2_temp 1
+            execute if score #n_print org_jawbts_riscvmc2_temp matches 1.. run {
+                scoreboard players set #12 org_jawbts_riscvmc2_register 48
+                scoreboard players operation #12 org_jawbts_riscvmc2_register += #n_d org_jawbts_riscvmc2_temp
+                function org_jawbts_riscvmc2_screen:char
+                scoreboard players add #10 org_jawbts_riscvmc2_register 4
+                scoreboard players set #n_lead org_jawbts_riscvmc2_temp 1
+            }
+            scoreboard players operation #n_pw org_jawbts_riscvmc2_temp /= #c10 org_jawbts_riscvmc2_temp
+            function ^1
+        }
+    }
+}
+
+# ---- icon / speckle / fluid / world --------------------------------
+
+function icon {
+    # a0=id a1=x a2=y a3=clip(ignored)
+    execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #11 org_jawbts_riscvmc2_register
+    scoreboard players set #scr_fy org_jawbts_riscvmc2_temp 231
+    scoreboard players operation #scr_fy org_jawbts_riscvmc2_temp -= #12 org_jawbts_riscvmc2_register
+    execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #scr_fy org_jawbts_riscvmc2_temp
+    scoreboard players operation #icon_id org_jawbts_riscvmc2_temp = #10 org_jawbts_riscvmc2_register
+    REPEAT (0, 64) as id {
+        IF (icon_pixels(id)) {
+            execute if score #icon_id org_jawbts_riscvmc2_temp matches <%id%> run function org_jawbts_riscvmc2_screen:icon_<%id%>
+        }
+    }
+}
+
+function speckle {
+    # a0=id a1=x a2=y a3=time a4=smelt
+    execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #11 org_jawbts_riscvmc2_register
+    scoreboard players set #scr_fy org_jawbts_riscvmc2_temp 231
+    scoreboard players operation #scr_fy org_jawbts_riscvmc2_temp -= #12 org_jawbts_riscvmc2_register
+    execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #scr_fy org_jawbts_riscvmc2_temp
+    scoreboard players operation #sp_id org_jawbts_riscvmc2_temp = #10 org_jawbts_riscvmc2_register
+    REPEAT (0, 27) as id {
+        IF (speckle_pixels(id)) {
+            execute if score #sp_id org_jawbts_riscvmc2_temp matches <%id%> run function org_jawbts_riscvmc2_screen:speckle_<%id%>
+        }
+    }
+    # furnace: frame + animated flame when smelting (a4)
+    execute if score #sp_id org_jawbts_riscvmc2_temp matches 10 run {
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $execute positioned $(x) $(fy) -1 run setblock ~1 ~-1 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~2 ~-1 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~3 ~-1 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~4 ~-1 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~5 ~-1 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~6 ~-1 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~1 ~-6 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~2 ~-6 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~3 ~-6 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~4 ~-6 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~5 ~-6 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~6 ~-6 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~1 ~-2 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~6 ~-2 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~1 ~-3 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~6 ~-3 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~1 ~-4 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~6 ~-4 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~1 ~-5 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~6 ~-5 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~2 ~-4 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~3 ~-4 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~4 ~-4 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~5 ~-4 ~0 minecraft:white_concrete
+        }
+        # flame pixel at y + 5 + ((time >> 2) & 1)
+        execute if score #14 org_jawbts_riscvmc2_register matches 1.. run {
+            scoreboard players operation #f_time org_jawbts_riscvmc2_temp = #13 org_jawbts_riscvmc2_register
+            scoreboard players operation #f_time org_jawbts_riscvmc2_temp /= #c4 org_jawbts_riscvmc2_temp
+            scoreboard players operation #f_time org_jawbts_riscvmc2_temp %= #c2 org_jawbts_riscvmc2_temp
+            scoreboard players add #f_time org_jawbts_riscvmc2_temp 5
+            execute store result storage org_jawbts_riscvmc2_temp:screen pos.fu int 1 run scoreboard players get #f_time org_jawbts_riscvmc2_temp
+            block { with storage org_jawbts_riscvmc2_temp:screen pos
+                $execute positioned $(x) $(fy) -1 run setblock ~3 ~-$(fu) ~0 minecraft:white_concrete
+            }
+        }
+    }
+}
+
+function fluid {
+    # a0=id a1=x a2=y a3=surf a4=time
+    execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #11 org_jawbts_riscvmc2_register
+    scoreboard players set #scr_fy org_jawbts_riscvmc2_temp 231
+    scoreboard players operation #scr_fy org_jawbts_riscvmc2_temp -= #12 org_jawbts_riscvmc2_register
+    execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #scr_fy org_jawbts_riscvmc2_temp
+    scoreboard players operation #fl_id org_jawbts_riscvmc2_temp = #10 org_jawbts_riscvmc2_register
+    # a = (time >> 2) & 3  =  (time / 4) % 4
+    scoreboard players operation #fl_a org_jawbts_riscvmc2_temp = #14 org_jawbts_riscvmc2_register
+    scoreboard players operation #fl_a org_jawbts_riscvmc2_temp /= #c4 org_jawbts_riscvmc2_temp
+    scoreboard players operation #fl_a org_jawbts_riscvmc2_temp %= #c4 org_jawbts_riscvmc2_temp
+
+    execute if score #fl_id org_jawbts_riscvmc2_temp matches 16 run {
+        # water: 4 surface px at x + (a+k)&7, y+1, for k in {0,1,4,5}
+        execute if score #13 org_jawbts_riscvmc2_register matches 1.. run {
+            scoreboard players set #fl_i org_jawbts_riscvmc2_temp 0
+            block {
+                execute if score #fl_i org_jawbts_riscvmc2_temp matches ..3 run {
+                    scoreboard players operation #fl_off org_jawbts_riscvmc2_temp = #fl_a org_jawbts_riscvmc2_temp
+                    scoreboard players set #fl_k org_jawbts_riscvmc2_temp 0
+                    execute if score #fl_i org_jawbts_riscvmc2_temp matches 1 run scoreboard players set #fl_k org_jawbts_riscvmc2_temp 1
+                    execute if score #fl_i org_jawbts_riscvmc2_temp matches 2 run scoreboard players set #fl_k org_jawbts_riscvmc2_temp 4
+                    execute if score #fl_i org_jawbts_riscvmc2_temp matches 3 run scoreboard players set #fl_k org_jawbts_riscvmc2_temp 5
+                    scoreboard players operation #fl_off org_jawbts_riscvmc2_temp += #fl_k org_jawbts_riscvmc2_temp
+                    scoreboard players operation #fl_off org_jawbts_riscvmc2_temp %= #c8 org_jawbts_riscvmc2_temp
+                    execute store result storage org_jawbts_riscvmc2_temp:screen pos.ox int 1 run scoreboard players get #fl_off org_jawbts_riscvmc2_temp
+                    block { with storage org_jawbts_riscvmc2_temp:screen pos
+                        $execute positioned $(x) $(fy) -1 run setblock ~$(ox) ~-1 ~0 minecraft:white_concrete
+                    }
+                    scoreboard players add #fl_i org_jawbts_riscvmc2_temp 1
+                    function ^1
+                }
+            }
+        }
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $execute positioned $(x) $(fy) -1 run setblock ~1 ~-4 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~4 ~-5 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~6 ~-3 ~0 minecraft:white_concrete
+        }
+    } else execute if score #fl_id org_jawbts_riscvmc2_temp matches 17 run {
+        # lava: 4 surface px at x + a + {-1,0,3,4}, y+1
+        execute if score #13 org_jawbts_riscvmc2_register matches 1.. run {
+            scoreboard players set #fl_i org_jawbts_riscvmc2_temp 0
+            block {
+                execute if score #fl_i org_jawbts_riscvmc2_temp matches ..3 run {
+                    scoreboard players operation #fl_off org_jawbts_riscvmc2_temp = #fl_a org_jawbts_riscvmc2_temp
+                    scoreboard players set #fl_k org_jawbts_riscvmc2_temp 0
+                    execute if score #fl_i org_jawbts_riscvmc2_temp matches 0 run scoreboard players set #fl_k org_jawbts_riscvmc2_temp -1
+                    execute if score #fl_i org_jawbts_riscvmc2_temp matches 2 run scoreboard players set #fl_k org_jawbts_riscvmc2_temp 3
+                    execute if score #fl_i org_jawbts_riscvmc2_temp matches 3 run scoreboard players set #fl_k org_jawbts_riscvmc2_temp 4
+                    scoreboard players operation #fl_off org_jawbts_riscvmc2_temp += #fl_k org_jawbts_riscvmc2_temp
+                    execute store result storage org_jawbts_riscvmc2_temp:screen pos.ox int 1 run scoreboard players get #fl_off org_jawbts_riscvmc2_temp
+                    block { with storage org_jawbts_riscvmc2_temp:screen pos
+                        $execute positioned $(x) $(fy) -1 run setblock ~$(ox) ~-1 ~0 minecraft:white_concrete
+                    }
+                    scoreboard players add #fl_i org_jawbts_riscvmc2_temp 1
+                    function ^1
+                }
+            }
+        }
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $execute positioned $(x) $(fy) -1 run setblock ~1 ~-3 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~5 ~-2 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~3 ~-5 ~0 minecraft:white_concrete
+            $execute positioned $(x) $(fy) -1 run setblock ~6 ~-6 ~0 minecraft:white_concrete
+        }
+    } else execute if score #fl_id org_jawbts_riscvmc2_temp matches 19 run {
+        # portal: 3 px at (2, a), (5, (a+4)&7), (3, (a+6)&7)
+        scoreboard players operation #fl_oy org_jawbts_riscvmc2_temp = #fl_a org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.oy int 1 run scoreboard players get #fl_oy org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $execute positioned $(x) $(fy) -1 run setblock ~2 ~-$(oy) ~0 minecraft:white_concrete
+        }
+        scoreboard players operation #fl_oy org_jawbts_riscvmc2_temp = #fl_a org_jawbts_riscvmc2_temp
+        scoreboard players add #fl_oy org_jawbts_riscvmc2_temp 4
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.oy int 1 run scoreboard players get #fl_oy org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $execute positioned $(x) $(fy) -1 run setblock ~5 ~-$(oy) ~0 minecraft:white_concrete
+        }
+        scoreboard players operation #fl_oy org_jawbts_riscvmc2_temp = #fl_a org_jawbts_riscvmc2_temp
+        scoreboard players add #fl_oy org_jawbts_riscvmc2_temp 6
+        scoreboard players operation #fl_oy org_jawbts_riscvmc2_temp %= #c8 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.oy int 1 run scoreboard players get #fl_oy org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $execute positioned $(x) $(fy) -1 run setblock ~3 ~-$(oy) ~0 minecraft:white_concrete
+        }
+    } else execute if score #fl_id org_jawbts_riscvmc2_temp matches 27 run {
+        # end portal
+        scoreboard players operation #fl_t org_jawbts_riscvmc2_temp = #14 org_jawbts_riscvmc2_register
+        scoreboard players operation #fl_t org_jawbts_riscvmc2_temp %= #c8 org_jawbts_riscvmc2_temp
+        execute if score #fl_t org_jawbts_riscvmc2_temp matches ..4 run {
+            block { with storage org_jawbts_riscvmc2_temp:screen pos
+                $execute positioned $(x) $(fy) -1 run setblock ~2 ~-2 ~0 minecraft:white_concrete
+            }
+        }
+        execute if score #fl_t org_jawbts_riscvmc2_temp matches ..2 run {
+            block { with storage org_jawbts_riscvmc2_temp:screen pos
+                $execute positioned $(x) $(fy) -1 run setblock ~5 ~-5 ~0 minecraft:white_concrete
+            }
+        }
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $execute positioned $(x) $(fy) -1 run setblock ~4 ~-3 ~0 minecraft:white_concrete
+        }
+    }
+}
+
+# screen_world: a0=wmap a1=cam_x a2=cam_y a3=time a4=smelt
+function world {
+    scoreboard players operation #w_wmap org_jawbts_riscvmc2_temp = #10 org_jawbts_riscvmc2_register
+    scoreboard players operation #w_camx org_jawbts_riscvmc2_temp = #11 org_jawbts_riscvmc2_register
+    scoreboard players operation #w_camy org_jawbts_riscvmc2_temp = #12 org_jawbts_riscvmc2_register
+    scoreboard players operation #w_time org_jawbts_riscvmc2_temp = #13 org_jawbts_riscvmc2_register
+    scoreboard players operation #w_smelt org_jawbts_riscvmc2_temp = #14 org_jawbts_riscvmc2_register
+    scoreboard players set #w_sx org_jawbts_riscvmc2_temp 0
+    scoreboard players set #w_sy org_jawbts_riscvmc2_temp 0
+    block {
+        execute if score #w_sy org_jawbts_riscvmc2_temp matches ..20 run {
+            # wy = cam_y + sy
+            scoreboard players operation #w_wy org_jawbts_riscvmc2_temp = #w_camy org_jawbts_riscvmc2_temp
+            scoreboard players operation #w_wy org_jawbts_riscvmc2_temp += #w_sy org_jawbts_riscvmc2_temp
+            execute if score #w_wy org_jawbts_riscvmc2_temp matches ..79 run {
+                # wx = cam_x + sx
+                scoreboard players operation #w_wx org_jawbts_riscvmc2_temp = #w_camx org_jawbts_riscvmc2_temp
+                scoreboard players operation #w_wx org_jawbts_riscvmc2_temp += #w_sx org_jawbts_riscvmc2_temp
+                # addr = wmap + (wy << 8) + wx
+                scoreboard players operation #w_addr org_jawbts_riscvmc2_temp = #w_wy org_jawbts_riscvmc2_temp
+                scoreboard players operation #w_addr org_jawbts_riscvmc2_temp *= #c256 org_jawbts_riscvmc2_temp
+                scoreboard players operation #w_addr org_jawbts_riscvmc2_temp += #w_wx org_jawbts_riscvmc2_temp
+                scoreboard players operation #w_addr org_jawbts_riscvmc2_temp += #w_wmap org_jawbts_riscvmc2_temp
+                template load_world_byte #w_addr@org_jawbts_riscvmc2_temp #w_id@org_jawbts_riscvmc2_temp
+                execute unless score #w_id org_jawbts_riscvmc2_temp matches 0 run {
+                    # x0 = sx << 3, y0 = sy << 3
+                    scoreboard players operation #w_x0 org_jawbts_riscvmc2_temp = #w_sx org_jawbts_riscvmc2_temp
+                    scoreboard players operation #w_x0 org_jawbts_riscvmc2_temp *= #c8 org_jawbts_riscvmc2_temp
+                    scoreboard players operation #w_y0 org_jawbts_riscvmc2_temp = #w_sy org_jawbts_riscvmc2_temp
+                    scoreboard players operation #w_y0 org_jawbts_riscvmc2_temp *= #c8 org_jawbts_riscvmc2_temp
+                    # fluid vs solid
+                    execute if score #w_id org_jawbts_riscvmc2_temp matches 16 run function org_jawbts_riscvmc2_screen:world_fluid
+                    execute if score #w_id org_jawbts_riscvmc2_temp matches 17 run function org_jawbts_riscvmc2_screen:world_fluid
+                    execute if score #w_id org_jawbts_riscvmc2_temp matches 19 run function org_jawbts_riscvmc2_screen:world_fluid
+                    execute if score #w_id org_jawbts_riscvmc2_temp matches 27 run function org_jawbts_riscvmc2_screen:world_fluid
+                    execute unless score #w_id org_jawbts_riscvmc2_temp matches 16 unless score #w_id org_jawbts_riscvmc2_temp matches 17 unless score #w_id org_jawbts_riscvmc2_temp matches 19 unless score #w_id org_jawbts_riscvmc2_temp matches 27 run function org_jawbts_riscvmc2_screen:world_solid
+                }
+            }
+            scoreboard players add #w_sx org_jawbts_riscvmc2_temp 1
+            execute if score #w_sx org_jawbts_riscvmc2_temp matches 24.. run {
+                scoreboard players set #w_sx org_jawbts_riscvmc2_temp 0
+                scoreboard players add #w_sy org_jawbts_riscvmc2_temp 1
+            }
+            function ^1
+        }
+    }
+}
+
+# solid tile: edge detection + speckle
+function world_solid {
+    # read up (wy-1), dn (wy+1), lf (wx-1), rt (wx+1)
+    # up
+    scoreboard players operation #w_uy org_jawbts_riscvmc2_temp = #w_wy org_jawbts_riscvmc2_temp
+    scoreboard players remove #w_uy org_jawbts_riscvmc2_temp 1
+    scoreboard players set #w_up org_jawbts_riscvmc2_temp 0
+    execute if score #w_sy org_jawbts_riscvmc2_temp matches 1.. if score #w_uy org_jawbts_riscvmc2_temp matches 0.. run {
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp = #w_uy org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp *= #c256 org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp += #w_wx org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp += #w_wmap org_jawbts_riscvmc2_temp
+        template load_world_byte #w_addr2@org_jawbts_riscvmc2_temp #w_up@org_jawbts_riscvmc2_temp
+    }
+    # dn
+    scoreboard players operation #w_dy org_jawbts_riscvmc2_temp = #w_wy org_jawbts_riscvmc2_temp
+    scoreboard players add #w_dy org_jawbts_riscvmc2_temp 1
+    scoreboard players set #w_dn org_jawbts_riscvmc2_temp 0
+    execute if score #w_dy org_jawbts_riscvmc2_temp matches ..79 run {
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp = #w_dy org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp *= #c256 org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp += #w_wx org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp += #w_wmap org_jawbts_riscvmc2_temp
+        template load_world_byte #w_addr2@org_jawbts_riscvmc2_temp #w_dn@org_jawbts_riscvmc2_temp
+    }
+    # lf
+    scoreboard players operation #w_lx org_jawbts_riscvmc2_temp = #w_wx org_jawbts_riscvmc2_temp
+    scoreboard players remove #w_lx org_jawbts_riscvmc2_temp 1
+    scoreboard players set #w_lf org_jawbts_riscvmc2_temp 0
+    execute if score #w_lx org_jawbts_riscvmc2_temp matches 0.. run {
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp = #w_wy org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp *= #c256 org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp += #w_lx org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp += #w_wmap org_jawbts_riscvmc2_temp
+        template load_world_byte #w_addr2@org_jawbts_riscvmc2_temp #w_lf@org_jawbts_riscvmc2_temp
+    }
+    # rt
+    scoreboard players operation #w_rx org_jawbts_riscvmc2_temp = #w_wx org_jawbts_riscvmc2_temp
+    scoreboard players add #w_rx org_jawbts_riscvmc2_temp 1
+    scoreboard players set #w_rt org_jawbts_riscvmc2_temp 0
+    execute if score #w_rx org_jawbts_riscvmc2_temp matches ..255 run {
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp = #w_wy org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp *= #c256 org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp += #w_rx org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp += #w_wmap org_jawbts_riscvmc2_temp
+        template load_world_byte #w_addr2@org_jawbts_riscvmc2_temp #w_rt@org_jawbts_riscvmc2_temp
+    }
+
+    # compute fy = 231 - y0 (screen-space origin for this tile)
+    scoreboard players set #w_fy org_jawbts_riscvmc2_temp 231
+    scoreboard players operation #w_fy org_jawbts_riscvmc2_temp -= #w_y0 org_jawbts_riscvmc2_temp
+
+    # draw an edge wherever the neighbour is NOT solid
+    # solid ids are {1..15, 18, 20..26}; everything else (air, water, lava,
+    # portal, end portal) gets an edge.
+    execute unless score #w_up org_jawbts_riscvmc2_temp matches 1..15 unless score #w_up org_jawbts_riscvmc2_temp matches 18 unless score #w_up org_jawbts_riscvmc2_temp matches 20..26 run {
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #w_x0 org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_x1 org_jawbts_riscvmc2_temp = #w_x0 org_jawbts_riscvmc2_temp
+        scoreboard players add #w_x1 org_jawbts_riscvmc2_temp 7
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x1 int 1 run scoreboard players get #w_x1 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #w_fy org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x1) $(fy) -1 minecraft:white_concrete
+        }
+    }
+    execute unless score #w_dn org_jawbts_riscvmc2_temp matches 1..15 unless score #w_dn org_jawbts_riscvmc2_temp matches 18 unless score #w_dn org_jawbts_riscvmc2_temp matches 20..26 run {
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #w_x0 org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_x1 org_jawbts_riscvmc2_temp = #w_x0 org_jawbts_riscvmc2_temp
+        scoreboard players add #w_x1 org_jawbts_riscvmc2_temp 7
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x1 int 1 run scoreboard players get #w_x1 org_jawbts_riscvmc2_temp
+        scoreboard players set #w_fy2 org_jawbts_riscvmc2_temp 224
+        scoreboard players operation #w_fy2 org_jawbts_riscvmc2_temp -= #w_y0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #w_fy2 org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x1) $(fy) -1 minecraft:white_concrete
+        }
+    }
+    execute unless score #w_lf org_jawbts_riscvmc2_temp matches 1..15 unless score #w_lf org_jawbts_riscvmc2_temp matches 18 unless score #w_lf org_jawbts_riscvmc2_temp matches 20..26 run {
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #w_x0 org_jawbts_riscvmc2_temp
+        scoreboard players set #w_fy2 org_jawbts_riscvmc2_temp 225
+        scoreboard players operation #w_fy2 org_jawbts_riscvmc2_temp -= #w_y0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #w_fy2 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy1 int 1 run scoreboard players get #w_fy org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x) $(fy1) -1 minecraft:white_concrete
+        }
+    }
+    execute unless score #w_rt org_jawbts_riscvmc2_temp matches 1..15 unless score #w_rt org_jawbts_riscvmc2_temp matches 18 unless score #w_rt org_jawbts_riscvmc2_temp matches 20..26 run {
+        scoreboard players operation #w_x1 org_jawbts_riscvmc2_temp = #w_x0 org_jawbts_riscvmc2_temp
+        scoreboard players add #w_x1 org_jawbts_riscvmc2_temp 7
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.x int 1 run scoreboard players get #w_x1 org_jawbts_riscvmc2_temp
+        scoreboard players set #w_fy2 org_jawbts_riscvmc2_temp 225
+        scoreboard players operation #w_fy2 org_jawbts_riscvmc2_temp -= #w_y0 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy int 1 run scoreboard players get #w_fy2 org_jawbts_riscvmc2_temp
+        execute store result storage org_jawbts_riscvmc2_temp:screen pos.fy1 int 1 run scoreboard players get #w_fy org_jawbts_riscvmc2_temp
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            $fill $(x) $(fy) -1 $(x) $(fy1) -1 minecraft:white_concrete
+        }
+    }
+
+    # speckle (texture) — ore/gravel always, others only if an edge was drawn
+    scoreboard players set #w_edge org_jawbts_riscvmc2_temp 0
+    execute unless score #w_up org_jawbts_riscvmc2_temp matches 1..15 unless score #w_up org_jawbts_riscvmc2_temp matches 18 unless score #w_up org_jawbts_riscvmc2_temp matches 20..26 run scoreboard players set #w_edge org_jawbts_riscvmc2_temp 1
+    execute unless score #w_dn org_jawbts_riscvmc2_temp matches 1..15 unless score #w_dn org_jawbts_riscvmc2_temp matches 18 unless score #w_dn org_jawbts_riscvmc2_temp matches 20..26 run scoreboard players set #w_edge org_jawbts_riscvmc2_temp 1
+    execute unless score #w_lf org_jawbts_riscvmc2_temp matches 1..15 unless score #w_lf org_jawbts_riscvmc2_temp matches 18 unless score #w_lf org_jawbts_riscvmc2_temp matches 20..26 run scoreboard players set #w_edge org_jawbts_riscvmc2_temp 1
+    execute unless score #w_rt org_jawbts_riscvmc2_temp matches 1..15 unless score #w_rt org_jawbts_riscvmc2_temp matches 18 unless score #w_rt org_jawbts_riscvmc2_temp matches 20..26 run scoreboard players set #w_edge org_jawbts_riscvmc2_temp 1
+    execute if score #w_id org_jawbts_riscvmc2_temp matches 13 run scoreboard players set #w_edge org_jawbts_riscvmc2_temp 1
+    execute if score #w_id org_jawbts_riscvmc2_temp matches 14 run scoreboard players set #w_edge org_jawbts_riscvmc2_temp 1
+    execute if score #w_id org_jawbts_riscvmc2_temp matches 15 run scoreboard players set #w_edge org_jawbts_riscvmc2_temp 1
+    execute if score #w_id org_jawbts_riscvmc2_temp matches 12 run scoreboard players set #w_edge org_jawbts_riscvmc2_temp 1
+    execute if score #w_edge org_jawbts_riscvmc2_temp matches 1.. run {
+        scoreboard players operation #11 org_jawbts_riscvmc2_register = #w_x0 org_jawbts_riscvmc2_temp
+        scoreboard players operation #12 org_jawbts_riscvmc2_register = #w_y0 org_jawbts_riscvmc2_temp
+        scoreboard players operation #10 org_jawbts_riscvmc2_register = #w_id org_jawbts_riscvmc2_temp
+        scoreboard players operation #13 org_jawbts_riscvmc2_register = #w_time org_jawbts_riscvmc2_temp
+        scoreboard players operation #14 org_jawbts_riscvmc2_register = #w_smelt org_jawbts_riscvmc2_temp
+        function org_jawbts_riscvmc2_screen:speckle
+    }
+}
+
+# fluid tile: reuse the fluid ecall handler
+function world_fluid {
+    # surf = 1 if the tile above differs from this one (or is off-screen)
+    scoreboard players set #13 org_jawbts_riscvmc2_register 1
+    scoreboard players operation #w_uy org_jawbts_riscvmc2_temp = #w_wy org_jawbts_riscvmc2_temp
+    scoreboard players remove #w_uy org_jawbts_riscvmc2_temp 1
+    execute if score #w_sy org_jawbts_riscvmc2_temp matches 1.. if score #w_uy org_jawbts_riscvmc2_temp matches 0.. run {
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp = #w_uy org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp *= #c256 org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp += #w_wx org_jawbts_riscvmc2_temp
+        scoreboard players operation #w_addr2 org_jawbts_riscvmc2_temp += #w_wmap org_jawbts_riscvmc2_temp
+        template load_world_byte #w_addr2@org_jawbts_riscvmc2_temp #w_up@org_jawbts_riscvmc2_temp
+        execute if score #w_up org_jawbts_riscvmc2_temp = #w_id org_jawbts_riscvmc2_temp run scoreboard players set #13 org_jawbts_riscvmc2_register 0
+    }
+    scoreboard players operation #11 org_jawbts_riscvmc2_register = #w_x0 org_jawbts_riscvmc2_temp
+    scoreboard players operation #12 org_jawbts_riscvmc2_register = #w_y0 org_jawbts_riscvmc2_temp
+    scoreboard players operation #10 org_jawbts_riscvmc2_register = #w_id org_jawbts_riscvmc2_temp
+    scoreboard players operation #14 org_jawbts_riscvmc2_register = #w_time org_jawbts_riscvmc2_temp
+    function org_jawbts_riscvmc2_screen:fluid
+}
+
+# ---- input ---------------------------------------------------------
+
+function input_poll {
+    # edge flags are cleared by display_sync AFTER game_tick reads them,
+    # so presses survive until consumed.  Nothing to do here.
+}
+
+function key_get {
+    # a0 = key code -> a0 = held flag
+    execute store result storage org_jawbts_riscvmc2_temp:screen key.k int 1 run scoreboard players get #10 org_jawbts_riscvmc2_register
+    block { with storage org_jawbts_riscvmc2_temp:screen key
+        $execute store result score #10 org_jawbts_riscvmc2_register run scoreboard players get #k_$(k) org_jawbts_riscvmc2_key
+    }
+}
+
+function key_pressed {
+    # a0 = key code -> a0 = edge flag
+    execute store result storage org_jawbts_riscvmc2_temp:screen key.k int 1 run scoreboard players get #10 org_jawbts_riscvmc2_register
+    block { with storage org_jawbts_riscvmc2_temp:screen key
+        $execute store result score #10 org_jawbts_riscvmc2_register run scoreboard players get #e_$(k) org_jawbts_riscvmc2_key
+        scoreboard players set #e_$(k) org_jawbts_riscvmc2_key 0
+    }
+}
+
+# ---- key input ------------------------------------------------------
+#
+# One function per key (K_* codes 0..29 from mc.h):
+#   0 LEFT  1 RIGHT  2 UP  3 DOWN  4 ACT  5 USE  6 MENU  7 BACK
+#   8 NEXT  9 PREV  10 AIM  11 FPS  12 DROP  13 CREATIVE
+#   14..23 D1..D0   24..29 DBG_G/T/H/P/L/M
+#
+# An external input source (a command block, a clickable keypad, ...) calls
+# `key_<n>` once per Minecraft tick while that key is held.  `reset_keys`
+# runs at the start of every tick and clears the held flags, so the moment the
+# source stops calling a key function the key is released on that same tick.
+#
+# `#prev_<n>` remembers the held state from the previous tick so the first
+# call after a release can raise the `#e_<n>` edge flag (which `kpressed()`
+# reads and `clear_edges` later consumes).
+
+function reset_keys {
+    REPEAT (0, 29) as k {
+        scoreboard players operation #prev_<%k%> org_jawbts_riscvmc2_key = #k_<%k%> org_jawbts_riscvmc2_key
+        scoreboard players set #k_<%k%> org_jawbts_riscvmc2_key 0
+    }
+}
+
+REPEAT (0, 29) as k {
+    function key_<%k%> {
+        scoreboard players set #k_<%k%> org_jawbts_riscvmc2_key 1
+        execute unless score #prev_<%k%> org_jawbts_riscvmc2_key matches 1.. run scoreboard players set #e_<%k%> org_jawbts_riscvmc2_key 1
+    }
+}
+
+# ---- generated glyph functions --------------------------------------
+REPEAT (0, 47) as g {
+    function glyph_<%g%> {
+        block { with storage org_jawbts_riscvmc2_temp:screen pos
+            REPEAT (0, 4) as r {
+                REPEAT (0, 2) as b {
+                    IF (((FONT[g * 5 + r] >> (2 - b)) & 1) == 1) {
+                        $execute positioned $(x) $(fy) -1 run setblock ~<%b%> ~<%-r%> ~0 minecraft:white_concrete
+                    }
+                }
+            }
+        }
+    }
+}
+
+# ---- generated icon functions ---------------------------------------
+REPEAT (0, 64) as id {
+    IF (icon_pixels(id)) {
+        function icon_<%id%> {
+            block { with storage org_jawbts_riscvmc2_temp:screen pos
+                REPEAT (0, 63) as p {
+                    IF (p < icon_pixels(id).length) {
+                        $execute positioned $(x) $(fy) -1 run setblock ~<% icon_pixels(id)[p][0] %> ~<%-icon_pixels(id)[p][1] %> ~0 minecraft:white_concrete
+                    }
+                }
+            }
+        }
+    }
+}
+
+# ---- generated speckle functions ------------------------------------
+REPEAT (0, 27) as id {
+    IF (speckle_pixels(id)) {
+        function speckle_<%id%> {
+            block { with storage org_jawbts_riscvmc2_temp:screen pos
+                REPEAT (0, 63) as p {
+                    IF (p < speckle_pixels(id).length) {
+                        $execute positioned $(x) $(fy) -1 run setblock ~<% speckle_pixels(id)[p][0] %> ~<%-speckle_pixels(id)[p][1] %> ~0 minecraft:white_concrete
+                    }
+                }
+            }
+        }
+    }
+}

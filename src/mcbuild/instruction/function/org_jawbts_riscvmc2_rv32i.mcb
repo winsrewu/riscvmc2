@@ -255,6 +255,75 @@ function ecall {
 		scoreboard players set #running org_jawbts_riscvmc2 0
 		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
 		tellraw @a [{text: "Exited with code "}, {score: {name: "#10", objective: "org_jawbts_riscvmc2_register"}}]
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2000 run {
+		function org_jawbts_riscvmc2_screen:clear
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2001 run {
+		function org_jawbts_riscvmc2_screen:set
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2002 run {
+		# dsp init — the wall is built statically, nothing to do
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2003 run {
+		# dsp present — show the back buffer
+		function org_jawbts_riscvmc2_screen:present
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2004 run {
+		# dsp sync — show the back buffer, clear key edge flags for the next frame
+		function org_jawbts_riscvmc2_screen:present
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2005 run {
+		# dsp ms — return the emulated millisecond clock in a0
+		scoreboard players operation #10 org_jawbts_riscvmc2_register = #game_ms org_jawbts_riscvmc2_temp
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2006 run {
+		# dsp sleep — pacing is handled by the minecraft tick, nothing to do
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2007 run {
+		# input poll — key flags are written externally, nothing to do
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2008 run {
+		function org_jawbts_riscvmc2_screen:key_get
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2009 run {
+		function org_jawbts_riscvmc2_screen:key_pressed
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2010 run {
+		function org_jawbts_riscvmc2_screen:hline
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2011 run {
+		function org_jawbts_riscvmc2_screen:vline
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2012 run {
+		function org_jawbts_riscvmc2_screen:rect
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2013 run {
+		function org_jawbts_riscvmc2_screen:fill_rect
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2014 run {
+		function org_jawbts_riscvmc2_screen:char
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2015 run {
+		function org_jawbts_riscvmc2_screen:text
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2016 run {
+		function org_jawbts_riscvmc2_screen:num
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2017 run {
+		function org_jawbts_riscvmc2_screen:icon
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2018 run {
+		function org_jawbts_riscvmc2_screen:speckle
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2019 run {
+		function org_jawbts_riscvmc2_screen:heart
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2020 run {
+		function org_jawbts_riscvmc2_screen:fluid
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
+	} else execute if score #ecall org_jawbts_riscvmc2_temp matches 2021 run {
+		function org_jawbts_riscvmc2_screen:world
+		scoreboard players set #ecall_block org_jawbts_riscvmc2 0
 	} else run {
 		say Error: Invalid ecall number
 	}

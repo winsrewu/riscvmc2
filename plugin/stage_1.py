@@ -91,6 +91,12 @@ def build_mcb(ctx: Context, pyriscv_config: PyriscvConfig):
     )
 
     shutil.copytree(
+        source_dir / "lib" / "screen",
+        build_dir / "src",
+        dirs_exist_ok=True,
+    )
+
+    shutil.copytree(
         source_dir / "main",
         build_dir / "src",
         dirs_exist_ok=True,

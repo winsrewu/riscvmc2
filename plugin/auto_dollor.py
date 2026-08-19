@@ -16,6 +16,7 @@ def auto_dollor(ctx: Context, config: PyriscvConfig):
         "org_jawbts_riscvmc2_rv32m",
         "org_jawbts_riscvmc2_memory",
         "org_jawbts_riscvmc2_test",
+        "org_jawbts_riscvmc2_screen",
     ]
 
     ACCEPTED_INJECT_PREFIXS.append(config.instruction_namespace)

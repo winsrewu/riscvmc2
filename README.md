@@ -64,7 +64,7 @@ do ``/function org_jawbts_riscvmc2_main:tick1000`` multiple times
 You need [RISC-V GNU Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain) (May require you 2~3 hours, 16+ GB disk space and Linux, whatever real machine or wsl, to download & compile) to cross compile the target program and [beet](https://github.com/mcbeet/beet) & [mcbuild](https://github.com/mc-build/mcb) (4.0.0 dev version) to build this project.
 
 
-Set machine architecture (march) to RV32I and machine application binary interface (mabi) to ilp32.
+Set machine architecture (march) to RV32IM and machine application binary interface (mabi) to ilp32.
 
 And check the build scripts in ``app/``
 

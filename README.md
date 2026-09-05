@@ -71,7 +71,7 @@ since they have better performance on small file operations.
 You can let beet zip the output and send it to Windows.
 
 For some program which requires a super long boot up, loading form snapshots (or I call it dumps) is recommanded.
-Check the dump system call in https://github.com/winsrewu/pyriscv. You need to spilt the output dump file into two and then check ``plugin/stage_1.py`` and ``plugin/stage_2.py``.
+Check the dump system call in [reference model](pyriscv/README.md#system-calls-table). You need to spilt the output dump file into two and then check ``plugin/stage_1.py`` and ``plugin/stage_2.py``.
 
 ## Techincal Details
 
@@ -79,9 +79,7 @@ Check the dump system call in https://github.com/winsrewu/pyriscv. You need to s
 
 #### Reference Module and Tests
 
-This project has a reference model, https://github.com/winsrewu/pyriscv,
-a python emulator.
-We have self-check tests from there.
+Reference module: ``pyriscv/``.
 
 ``test/pc_log_to_mcf.py`` can be used to check whether they have the
 same behavior (pc and all registers).

@@ -8,4 +8,5 @@ module.exports = {
   instructionNamespace: "<% PLACEHOLDER_INSTRUCTION_NAMESPACE %>", // the namespace for generated instructions. controlled by build script. do not modify.
   instructionFunctionNamespace: "<% PLACEHOLDER_INSTRUCTION_FUNCTION_NAMESPACE %>", // the function name space for generated instructions. controlled by build script. do not modify.
   textStoragePosition: "<% PLACEHOLDER_TEXT_STORAGE_POSITION %>", // the text storage position for generated instructions. controlled by build script. do not modify.
+  screenEnabled: "<% PLACEHOLDER_SCREEN_ENABLED %>", // whether the MC-side screen (ecall 2000-2003) is built in. controlled by build script. do not modify.
 };

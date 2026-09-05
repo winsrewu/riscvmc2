@@ -164,5 +164,9 @@ function reload {
 	scoreboard objectives add org_jawbts_riscvmc2_memory dummy
 	scoreboard players set #pc org_jawbts_riscvmc2_register 0
 
+	IF (config.screenEnabled == true) {
+		function org_jawbts_riscvmc2_screen:init
+	}
+
 	function org_jawbts_riscvmc2_loader:all
 }

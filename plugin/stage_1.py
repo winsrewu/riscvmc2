@@ -154,6 +154,10 @@ def build_mcb(ctx: Context, pyriscv_config: PyriscvConfig):
         "<% PLACEHOLDER_TEXT_STORAGE_POSITION %>",
         pyriscv_config.text_storage_position.name,
     )
+    config_content = config_content.replace(
+        '"<% PLACEHOLDER_SCREEN_ENABLED %>"',
+        "true" if pyriscv_config.screen_enabled else "false",
+    )
 
     with open(build_dir / MCB_CONFIG_FILE, "w") as f:
         f.write(config_content)

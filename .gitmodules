@@ -1,0 +1,4 @@
+[submodule "pyriscv"]
+	path = pyriscv
+	url = https://github.com/winsrewu/pyriscv
+	branch = riscvmc2/reference_model

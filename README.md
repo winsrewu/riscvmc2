@@ -113,11 +113,7 @@ Cache default to true.
 
 ### System Calls Table
 
-| number | function | args | return |
-|--------|----------|------|--------|
-| 63     | read     | fd, ptr, len | number of bytes read |
-| 64     | write    | fd, ptr, len | number of bytes written |
-| 93     | exit     | error_code | - |
+Check reference model's [readme](pyriscv/README.md#system-calls-table).
 
 You can check ``app/c-common`` for example.
 

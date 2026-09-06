@@ -91,23 +91,16 @@ template _divu {
         } else if score #a org_jawbts_riscvmc2_rv32m_temp matches 0.. run {
             scoreboard players set #d org_jawbts_riscvmc2_rv32m_temp 0
         } else if score #b org_jawbts_riscvmc2_rv32m_temp matches 1.. run {
-            scoreboard players operation #x org_jawbts_riscvmc2_rv32m_temp = #a org_jawbts_riscvmc2_rv32m_temp
-            scoreboard players operation #x org_jawbts_riscvmc2_rv32m_temp /= #b org_jawbts_riscvmc2_rv32m_temp
-            
-            scoreboard players operation #y org_jawbts_riscvmc2_rv32m_temp = #a org_jawbts_riscvmc2_rv32m_temp
-            scoreboard players operation #y org_jawbts_riscvmc2_rv32m_temp %= #b org_jawbts_riscvmc2_rv32m_temp
-            
+            # MC /= and %= floor toward -inf (verified on the real game),
+            # so derive the unsigned quotient from floor values:
+            #   a_u = 2^31 + l,  l = a - min_int in [0, 2^31)
+            #   q31  = min_int / b       = -(q31t + c), c = (2^31 % b != 0)
+            #   q31f = min_int % b       = c ? b - (2^31 % b) : 0
+            #   d = q31t + l/b + carry, carry = (c && rl >= q31f)
             scoreboard players operation #q31 org_jawbts_riscvmc2_rv32m_temp = #min_int org_jawbts_riscvmc2_rv32m_consts
             scoreboard players operation #q31 org_jawbts_riscvmc2_rv32m_temp /= #b org_jawbts_riscvmc2_rv32m_temp
-            scoreboard players set #_neg org_jawbts_riscvmc2_rv32m_temp 0
-            scoreboard players operation #_neg org_jawbts_riscvmc2_rv32m_temp -= #q31 org_jawbts_riscvmc2_rv32m_temp
-            scoreboard players operation #q31 org_jawbts_riscvmc2_rv32m_temp = #_neg org_jawbts_riscvmc2_rv32m_temp
-
             scoreboard players operation #q31f org_jawbts_riscvmc2_rv32m_temp = #min_int org_jawbts_riscvmc2_rv32m_consts
             scoreboard players operation #q31f org_jawbts_riscvmc2_rv32m_temp %= #b org_jawbts_riscvmc2_rv32m_temp
-
-            scoreboard players operation #rem31 org_jawbts_riscvmc2_rv32m_temp = #min_int org_jawbts_riscvmc2_rv32m_consts
-            scoreboard players operation #rem31 org_jawbts_riscvmc2_rv32m_temp %= #b org_jawbts_riscvmc2_rv32m_temp
 
             scoreboard players operation #l org_jawbts_riscvmc2_rv32m_temp = #a org_jawbts_riscvmc2_rv32m_temp
             scoreboard players operation #l org_jawbts_riscvmc2_rv32m_temp -= #min_int org_jawbts_riscvmc2_rv32m_consts
@@ -118,12 +111,13 @@ template _divu {
             scoreboard players operation #rl org_jawbts_riscvmc2_rv32m_temp = #l org_jawbts_riscvmc2_rv32m_temp
             scoreboard players operation #rl org_jawbts_riscvmc2_rv32m_temp %= #b org_jawbts_riscvmc2_rv32m_temp
 
-            scoreboard players operation #q31f org_jawbts_riscvmc2_rv32m_temp += #b org_jawbts_riscvmc2_rv32m_temp
-            execute if score #rl org_jawbts_riscvmc2_rv32m_temp >= #q31f org_jawbts_riscvmc2_rv32m_temp run {
-                scoreboard players operation #q31 org_jawbts_riscvmc2_rv32m_temp += #one org_jawbts_riscvmc2_rv32m_consts
-            }
+            scoreboard players set #_neg org_jawbts_riscvmc2_rv32m_temp 0
+            scoreboard players operation #_neg org_jawbts_riscvmc2_rv32m_temp -= #q31 org_jawbts_riscvmc2_rv32m_temp
 
-            scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp = #q31 org_jawbts_riscvmc2_rv32m_temp
+            execute if score #q31f org_jawbts_riscvmc2_rv32m_temp matches 1.. run scoreboard players operation #_neg org_jawbts_riscvmc2_rv32m_temp -= #one org_jawbts_riscvmc2_rv32m_consts
+            execute if score #q31f org_jawbts_riscvmc2_rv32m_temp matches 1.. if score #rl org_jawbts_riscvmc2_rv32m_temp >= #q31f org_jawbts_riscvmc2_rv32m_temp run scoreboard players operation #_neg org_jawbts_riscvmc2_rv32m_temp += #one org_jawbts_riscvmc2_rv32m_consts
+
+            scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp = #_neg org_jawbts_riscvmc2_rv32m_temp
             scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp += #ql org_jawbts_riscvmc2_rv32m_temp
         } else if score #a org_jawbts_riscvmc2_rv32m_temp >= #b org_jawbts_riscvmc2_rv32m_temp run {
             scoreboard players set #d org_jawbts_riscvmc2_rv32m_temp 1
@@ -171,13 +165,19 @@ template i_mulhu {
 
 template i_div {
     with rs1:word rs2:word rd:word {
+        # MC /= floors toward -inf; RISC-V div truncates toward zero.
+        # Fix up: opposite signs and a non-zero remainder -> add 1.
         scoreboard players set #div_flag org_jawbts_riscvmc2_rv32m_temp 0
         execute if score #<% rs2 %> org_jawbts_riscvmc2_register matches 0 run scoreboard players set #div_flag org_jawbts_riscvmc2_rv32m_temp 1
+        execute if score #<% rs1 %> org_jawbts_riscvmc2_register matches -2147483648 if score #<% rs2 %> org_jawbts_riscvmc2_register matches -1 run scoreboard players set #div_flag org_jawbts_riscvmc2_rv32m_temp 2
         execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp = #<% rs1 %> org_jawbts_riscvmc2_register
         execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp /= #<% rs2 %> org_jawbts_riscvmc2_register
+        execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #div_rem org_jawbts_riscvmc2_rv32m_temp = #<% rs1 %> org_jawbts_riscvmc2_register
+        execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #div_rem org_jawbts_riscvmc2_rv32m_temp %= #<% rs2 %> org_jawbts_riscvmc2_register
         execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 1 run scoreboard players set #d org_jawbts_riscvmc2_rv32m_temp -1
-        scoreboard players operation #div_rem org_jawbts_riscvmc2_rv32m_temp = #<% rs1 %> org_jawbts_riscvmc2_register
-        scoreboard players operation #div_rem org_jawbts_riscvmc2_rv32m_temp %= #<% rs2 %> org_jawbts_riscvmc2_register
+        execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 2 run scoreboard players set #d org_jawbts_riscvmc2_rv32m_temp -2147483648
+        execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 0 if score #<% rs1 %> org_jawbts_riscvmc2_register matches ..-1 if score #<% rs2 %> org_jawbts_riscvmc2_register matches 1.. unless score #div_rem org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp += #one org_jawbts_riscvmc2_rv32m_consts
+        execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 0 if score #<% rs1 %> org_jawbts_riscvmc2_register matches 1.. if score #<% rs2 %> org_jawbts_riscvmc2_register matches ..-1 unless score #div_rem org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp += #one org_jawbts_riscvmc2_rv32m_consts
         scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register = #d org_jawbts_riscvmc2_rv32m_temp
         template _pc_add 4
     }
@@ -185,6 +185,8 @@ template i_div {
 
 template i_rem {
     with rs1:word rs2:word rd:word {
+        # MC %= is floorMod; RISC-V rem keeps the sign of the dividend.
+        # Fix up: dividend negative, divisor positive, non-zero rem -> -= b.
         scoreboard players set #rem_flag org_jawbts_riscvmc2_rv32m_temp 0
         execute if score #<% rs2 %> org_jawbts_riscvmc2_register matches 0 run scoreboard players set #rem_flag org_jawbts_riscvmc2_rv32m_temp 1
         execute if score #<% rs1 %> org_jawbts_riscvmc2_register matches -2147483648 if score #<% rs2 %> org_jawbts_riscvmc2_register matches -1 run scoreboard players set #rem_flag org_jawbts_riscvmc2_rv32m_temp 2
@@ -192,6 +194,8 @@ template i_rem {
         execute if score #rem_flag org_jawbts_riscvmc2_rv32m_temp matches 2 run scoreboard players set #d org_jawbts_riscvmc2_rv32m_temp 0
         execute if score #rem_flag org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp = #<% rs1 %> org_jawbts_riscvmc2_register
         execute if score #rem_flag org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp %= #<% rs2 %> org_jawbts_riscvmc2_register
+        execute if score #rem_flag org_jawbts_riscvmc2_rv32m_temp matches 0 if score #<% rs1 %> org_jawbts_riscvmc2_register matches ..-1 if score #<% rs2 %> org_jawbts_riscvmc2_register matches 1.. unless score #d org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp -= #<% rs2 %> org_jawbts_riscvmc2_register
+        execute if score #rem_flag org_jawbts_riscvmc2_rv32m_temp matches 0 if score #<% rs1 %> org_jawbts_riscvmc2_register matches 1.. if score #<% rs2 %> org_jawbts_riscvmc2_register matches ..-1 unless score #d org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp -= #<% rs2 %> org_jawbts_riscvmc2_register
         scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register = #d org_jawbts_riscvmc2_rv32m_temp
 
         template _pc_add 4

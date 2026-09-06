@@ -238,10 +238,7 @@ def generate_screen(ctx: Context, config):
         funcs[fid] = Function(chunk)
         init_chunk_ids.append(fid)
 
-    funcs[f"{NS}:draw"] = Function(
-        [f"function {fid}" for fid in draw_chunk_ids]
-        + [f"function {NS}:key_reset"]  # frame done -> clear all key flags
-    )
+    funcs[f"{NS}:draw"] = Function([f"function {fid}" for fid in draw_chunk_ids])
 
     # ---- game tick clock (ecall 2001/2002) --------------------------
 
@@ -302,6 +299,8 @@ def generate_screen(ctx: Context, config):
             f"execute if score #scr_key {TEMP_OBJ} matches {n} run "
             f"scoreboard players operation #10 {REG_OBJ} = "
             f"#k_{n} {KEY_OBJ}"
+            f"execute if score #scr_key {TEMP_OBJ} matches {n} run "
+            f"scoreboard players set #k_{n} {KEY_OBJ} 0"
         )
     funcs[f"{NS}:key_get"] = Function(key_get_lines)
 

@@ -36,68 +36,24 @@ template _umod16 {
 
 template _mul_high {
     with input_a:word input_b:word a_signed:word b_signed:word output:word {
+        template _udiv16 <% input_a %> #ah@org_jawbts_riscvmc2_rv32m_temp
         template _umod16 <% input_a %> #al@org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #ah org_jawbts_riscvmc2_rv32m_temp = <% input_a.replace("@", " ") %>
-        scoreboard players operation #ah org_jawbts_riscvmc2_rv32m_temp -= #al org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #ah org_jawbts_riscvmc2_rv32m_temp /= #base org_jawbts_riscvmc2_rv32m_consts
-
+        template _udiv16 <% input_b %> #bh@org_jawbts_riscvmc2_rv32m_temp
         template _umod16 <% input_b %> #bl@org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #bh org_jawbts_riscvmc2_rv32m_temp = <% input_b.replace("@", " ") %>
-        scoreboard players operation #bh org_jawbts_riscvmc2_rv32m_temp -= #bl org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #bh org_jawbts_riscvmc2_rv32m_temp /= #base org_jawbts_riscvmc2_rv32m_consts
-
-        IF a_signed != "signed" {
-            execute if score <% input_a.replace("@", " ") %> matches ..-1 run {
-                scoreboard players operation #ah org_jawbts_riscvmc2_rv32m_temp += #base org_jawbts_riscvmc2_rv32m_consts
-            }
-        }
-        IF b_signed != "signed" {
-            execute if score <% input_b.replace("@", " ") %> matches ..-1 run {
-                scoreboard players operation #bh org_jawbts_riscvmc2_rv32m_temp += #base org_jawbts_riscvmc2_rv32m_consts
-            }
-        }
 
         scoreboard players operation #p0 org_jawbts_riscvmc2_rv32m_temp = #al org_jawbts_riscvmc2_rv32m_temp
         scoreboard players operation #p0 org_jawbts_riscvmc2_rv32m_temp *= #bl org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #c0 org_jawbts_riscvmc2_rv32m_temp = #p0 org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #c0 org_jawbts_riscvmc2_rv32m_temp /= #base org_jawbts_riscvmc2_rv32m_consts
-        scoreboard players operation #p0_rem org_jawbts_riscvmc2_rv32m_temp = #p0 org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #p0_rem org_jawbts_riscvmc2_rv32m_temp %= #base org_jawbts_riscvmc2_rv32m_consts
-        execute if score #p0 org_jawbts_riscvmc2_rv32m_temp matches ..-1 run {
-            scoreboard players operation #c0 org_jawbts_riscvmc2_rv32m_temp += #base org_jawbts_riscvmc2_rv32m_consts
-        }
+        template _udiv16 #p0@org_jawbts_riscvmc2_rv32m_temp #c0@org_jawbts_riscvmc2_rv32m_temp
 
         scoreboard players operation #t1 org_jawbts_riscvmc2_rv32m_temp = #ah org_jawbts_riscvmc2_rv32m_temp
         scoreboard players operation #t1 org_jawbts_riscvmc2_rv32m_temp *= #bl org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #t1_lo org_jawbts_riscvmc2_rv32m_temp = #t1 org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #t1_lo org_jawbts_riscvmc2_rv32m_temp %= #base org_jawbts_riscvmc2_rv32m_consts
-        execute if score #t1_lo org_jawbts_riscvmc2_rv32m_temp matches ..-1 run {
-            scoreboard players operation #t1_lo org_jawbts_riscvmc2_rv32m_temp += #base org_jawbts_riscvmc2_rv32m_consts
-        }
-        scoreboard players operation #t1_hi org_jawbts_riscvmc2_rv32m_temp = #t1 org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #t1_hi org_jawbts_riscvmc2_rv32m_temp -= #t1_lo org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #t1_hi org_jawbts_riscvmc2_rv32m_temp /= #base org_jawbts_riscvmc2_rv32m_consts
-        IF a_signed != "signed" {
-            execute if score #t1 org_jawbts_riscvmc2_rv32m_temp matches ..-1 run {
-                scoreboard players operation #t1_hi org_jawbts_riscvmc2_rv32m_temp += #base org_jawbts_riscvmc2_rv32m_consts
-            }
-        }
+        template _umod16 #t1@org_jawbts_riscvmc2_rv32m_temp #t1_lo@org_jawbts_riscvmc2_rv32m_temp
+        template _udiv16 #t1@org_jawbts_riscvmc2_rv32m_temp #t1_hi@org_jawbts_riscvmc2_rv32m_temp
 
         scoreboard players operation #t2 org_jawbts_riscvmc2_rv32m_temp = #al org_jawbts_riscvmc2_rv32m_temp
         scoreboard players operation #t2 org_jawbts_riscvmc2_rv32m_temp *= #bh org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #t2_lo org_jawbts_riscvmc2_rv32m_temp = #t2 org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #t2_lo org_jawbts_riscvmc2_rv32m_temp %= #base org_jawbts_riscvmc2_rv32m_consts
-        execute if score #t2_lo org_jawbts_riscvmc2_rv32m_temp matches ..-1 run {
-            scoreboard players operation #t2_lo org_jawbts_riscvmc2_rv32m_temp += #base org_jawbts_riscvmc2_rv32m_consts
-        }
-        scoreboard players operation #t2_hi org_jawbts_riscvmc2_rv32m_temp = #t2 org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #t2_hi org_jawbts_riscvmc2_rv32m_temp -= #t2_lo org_jawbts_riscvmc2_rv32m_temp
-        scoreboard players operation #t2_hi org_jawbts_riscvmc2_rv32m_temp /= #base org_jawbts_riscvmc2_rv32m_consts
-        IF b_signed != "signed" {
-            execute if score #t2 org_jawbts_riscvmc2_rv32m_temp matches ..-1 run {
-                scoreboard players operation #t2_hi org_jawbts_riscvmc2_rv32m_temp += #base org_jawbts_riscvmc2_rv32m_consts
-            }
-        }
+        template _umod16 #t2@org_jawbts_riscvmc2_rv32m_temp #t2_lo@org_jawbts_riscvmc2_rv32m_temp
+        template _udiv16 #t2@org_jawbts_riscvmc2_rv32m_temp #t2_hi@org_jawbts_riscvmc2_rv32m_temp
 
         scoreboard players operation #sum_mid org_jawbts_riscvmc2_rv32m_temp = #c0 org_jawbts_riscvmc2_rv32m_temp
         scoreboard players operation #sum_mid org_jawbts_riscvmc2_rv32m_temp += #t1_lo org_jawbts_riscvmc2_rv32m_temp
@@ -110,6 +66,13 @@ template _mul_high {
         scoreboard players operation <% output.replace("@", " ") %> += #t1_hi org_jawbts_riscvmc2_rv32m_temp
         scoreboard players operation <% output.replace("@", " ") %> += #t2_hi org_jawbts_riscvmc2_rv32m_temp
         scoreboard players operation <% output.replace("@", " ") %> += #carry org_jawbts_riscvmc2_rv32m_temp
+
+        IF a_signed == "signed" {
+            execute if score <% input_a.replace("@", " ") %> matches ..-1 run scoreboard players operation <% output.replace("@", " ") %> -= <% input_b.replace("@", " ") %>
+        }
+        IF b_signed == "signed" {
+            execute if score <% input_b.replace("@", " ") %> matches ..-1 run scoreboard players operation <% output.replace("@", " ") %> -= <% input_a.replace("@", " ") %>
+        }
     }
 }
 
@@ -142,10 +105,6 @@ template _divu {
 
             scoreboard players operation #q31f org_jawbts_riscvmc2_rv32m_temp = #min_int org_jawbts_riscvmc2_rv32m_consts
             scoreboard players operation #q31f org_jawbts_riscvmc2_rv32m_temp %= #b org_jawbts_riscvmc2_rv32m_temp
-            
-            execute unless score #q31f org_jawbts_riscvmc2_rv32m_temp matches 0 run {
-                scoreboard players operation #q31 org_jawbts_riscvmc2_rv32m_temp -= #one org_jawbts_riscvmc2_rv32m_consts
-            }
 
             scoreboard players operation #rem31 org_jawbts_riscvmc2_rv32m_temp = #min_int org_jawbts_riscvmc2_rv32m_consts
             scoreboard players operation #rem31 org_jawbts_riscvmc2_rv32m_temp %= #b org_jawbts_riscvmc2_rv32m_temp
@@ -159,6 +118,7 @@ template _divu {
             scoreboard players operation #rl org_jawbts_riscvmc2_rv32m_temp = #l org_jawbts_riscvmc2_rv32m_temp
             scoreboard players operation #rl org_jawbts_riscvmc2_rv32m_temp %= #b org_jawbts_riscvmc2_rv32m_temp
 
+            scoreboard players operation #q31f org_jawbts_riscvmc2_rv32m_temp += #b org_jawbts_riscvmc2_rv32m_temp
             execute if score #rl org_jawbts_riscvmc2_rv32m_temp >= #q31f org_jawbts_riscvmc2_rv32m_temp run {
                 scoreboard players operation #q31 org_jawbts_riscvmc2_rv32m_temp += #one org_jawbts_riscvmc2_rv32m_consts
             }
@@ -218,8 +178,6 @@ template i_div {
         execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 1 run scoreboard players set #d org_jawbts_riscvmc2_rv32m_temp -1
         scoreboard players operation #div_rem org_jawbts_riscvmc2_rv32m_temp = #<% rs1 %> org_jawbts_riscvmc2_register
         scoreboard players operation #div_rem org_jawbts_riscvmc2_rv32m_temp %= #<% rs2 %> org_jawbts_riscvmc2_register
-        execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 0 unless score #div_rem org_jawbts_riscvmc2_rv32m_temp matches 0 if score #<% rs1 %> org_jawbts_riscvmc2_register matches ..-1 unless score #<% rs2 %> org_jawbts_riscvmc2_register matches ..-1 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp += #one org_jawbts_riscvmc2_rv32m_consts
-        execute if score #div_flag org_jawbts_riscvmc2_rv32m_temp matches 0 unless score #div_rem org_jawbts_riscvmc2_rv32m_temp matches 0 unless score #<% rs1 %> org_jawbts_riscvmc2_register matches ..-1 if score #<% rs2 %> org_jawbts_riscvmc2_register matches ..-1 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp += #one org_jawbts_riscvmc2_rv32m_consts
         scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register = #d org_jawbts_riscvmc2_rv32m_temp
         template _pc_add 4
     }
@@ -234,8 +192,6 @@ template i_rem {
         execute if score #rem_flag org_jawbts_riscvmc2_rv32m_temp matches 2 run scoreboard players set #d org_jawbts_riscvmc2_rv32m_temp 0
         execute if score #rem_flag org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp = #<% rs1 %> org_jawbts_riscvmc2_register
         execute if score #rem_flag org_jawbts_riscvmc2_rv32m_temp matches 0 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp %= #<% rs2 %> org_jawbts_riscvmc2_register
-        execute if score #rem_flag org_jawbts_riscvmc2_rv32m_temp matches 0 unless score #d org_jawbts_riscvmc2_rv32m_temp matches 0 if score #<% rs1 %> org_jawbts_riscvmc2_register matches ..-1 unless score #<% rs2 %> org_jawbts_riscvmc2_register matches ..-1 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp -= #<% rs2 %> org_jawbts_riscvmc2_register
-        execute if score #rem_flag org_jawbts_riscvmc2_rv32m_temp matches 0 unless score #d org_jawbts_riscvmc2_rv32m_temp matches 0 unless score #<% rs1 %> org_jawbts_riscvmc2_register matches ..-1 if score #<% rs2 %> org_jawbts_riscvmc2_register matches ..-1 run scoreboard players operation #d org_jawbts_riscvmc2_rv32m_temp -= #<% rs2 %> org_jawbts_riscvmc2_register
         scoreboard players operation #<% rd %> org_jawbts_riscvmc2_register = #d org_jawbts_riscvmc2_rv32m_temp
 
         template _pc_add 4

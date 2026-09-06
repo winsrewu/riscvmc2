@@ -299,6 +299,8 @@ def generate_screen(ctx: Context, config):
             f"execute if score #scr_key {TEMP_OBJ} matches {n} run "
             f"scoreboard players operation #10 {REG_OBJ} = "
             f"#k_{n} {KEY_OBJ}"
+        )
+        key_get_lines.append(
             f"execute if score #scr_key {TEMP_OBJ} matches {n} run "
             f"scoreboard players set #k_{n} {KEY_OBJ} 0"
         )
